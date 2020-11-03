@@ -1,36 +1,27 @@
 import os
-
-from flask import Flask
+from flask import Flask, jsonify
 from flask_marshmallow import Marshmallow
-from . import db
-
-def create_app(test_config=None):
-    # create and configure the app
-    app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(
-        SECRET_KEY = 'dev', # change in production
-        SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(app.instance_path, 'core.db')
-    )
+from flask_sqlalchemy import SQLAlchemy
+from flask_marshmallow import Marshmallow
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token
 
 
-    if test_config is None:
-        # load the instance config, if it exists, when not testing
-        app.config.from_pyfile('config.py', silent=True)
-    else:
-        # load the test config if passed in
-        app.config.from_mapping(test_config)
+app = Flask(__name__, instance_relative_config=True)
+app.config.from_mapping(
+    SECRET_KEY = 'dev', # change in production
+    JWT_SECRET_KEY = 'super-secret',
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(app.instance_path, 'core.db')
+)
 
-    # ensure the instance folder exists
-    try:
-        os.makedirs(app.instance_path)
-    except OSError:
-        pass
+db = SQLAlchemy(app)
+ma = Marshmallow(app)
+jwt = JWTManager(app)
 
-    db.init_app(app)
+# ensure the instance folder exists
+try:
+    os.makedirs(app.instance_path)
+except OSError:
+    pass
 
-    # a simple page that says hello
-    @app.route('/hello')
-    def hello():
-        return 'Hello, World!'
-
-    return app
+from . import routes
+from core.db import *
