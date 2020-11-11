@@ -4,6 +4,7 @@ from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token
+from flask_cors import CORS, cross_origin
 
 
 app = Flask(__name__, instance_relative_config=True)
@@ -12,6 +13,9 @@ app.config.from_mapping(
     JWT_SECRET_KEY = 'super-secret',
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(app.instance_path, 'core.db')
 )
+
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
