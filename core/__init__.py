@@ -6,7 +6,6 @@ from flask_marshmallow import Marshmallow
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token
 from flask_cors import CORS, cross_origin
 
-
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_mapping(
     SECRET_KEY = 'dev', # change in production
@@ -16,6 +15,7 @@ app.config.from_mapping(
 
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
+app.config['UPLOAD_FOLDER'] = '/uploads'
 
 db = SQLAlchemy(app)
 ma = Marshmallow(app)

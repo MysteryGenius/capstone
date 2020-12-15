@@ -19,11 +19,13 @@ def db_seed():
     test_user_1 = User(
     	first_name='Rick',
 		last_name='Sanchez',
+        role='admin',
 		email='wubbalubba@dubdub.com')
 
     test_user_2 = User(
     	first_name='Jian Zhen',
 		last_name='Tan',
+        role='user',
 		email='jayz@oi.wtf')
 
     test_user_1.set_password('password')
