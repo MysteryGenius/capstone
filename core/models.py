@@ -9,15 +9,17 @@ class User(db.Model):
 	username = Column(String)
 	first_name = Column(String)
 	last_name = Column(String)
-	document_type = Column(String)
-	pid = Column(String)
+	document_type = Column(String)	# Enum (Passport, NRIC, FIN)
+	pid = Column(String)			# Last 4 characters on personal IC
 	mobile_number = Column(String)
 	photo = Column(String)
 	residence_code = Column(String)
 	phone_area_code = Column(String)
-	enrolled_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+	password = Column(String)		# bcrypt hashed
 	email = Column(String, unique=True)
-	password = Column(String) # bcrypt hashed
+	status = Column(String)			# Enum (active, disabled)
+	enrolled_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+	organisation_id = db.Column(db.Integer, db.ForeignKey('organisation.id'))
 
 	created_on = db.Column(db.DateTime, server_default=db.func.now())
 	updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
@@ -34,6 +36,41 @@ class UserSchema(ma.Schema):
 
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
+
+class Operator(db.Model):
+	__tablename__ = 'operators'
+	id = Column(Integer, primary_key=True)
+	username = Column(String)
+	first_name = Column(String)
+	last_name = Column(String)
+	document_type = Column(String)	# Enum (Passport, NRIC, FIN)
+	pid = Column(String)			# Last 4 characters on personal IC
+	mobile_number = Column(String)
+	photo = Column(String)
+	residence_code = Column(String)
+	phone_area_code = Column(String)
+	password = Column(String)		# bcrypt hashed
+	email = Column(String, unique=True)
+	status = Column(String)			# Enum (active, disabled)
+	enrolled_id = db.Column(db.Integer, db.ForeignKey('operators.id'))
+	organisation_id = db.Column(db.Integer, db.ForeignKey('organisation.id'))
+
+	created_on = db.Column(db.DateTime, server_default=db.func.now())
+	updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
+
+	def set_password(self, password):
+		self.password = generate_password_hash(password)
+
+	def check_password(self, password):
+		return check_password_hash(self.password, password)
+
+class OperatorSchema(ma.Schema):
+	class Meta:
+		fields = ('id', 'first_name', 'last_name', 'email', 'role')
+
+operator_schema = OperatorSchema()
+operators_schema = OperatorSchema(many=True)
+
 
 class Session(db.Model):
 	__tablename__ = 'sessions'
@@ -100,4 +137,4 @@ class OrganizationSchema(ma.Schema):
 		fields = ('id', 'created_by', 'name', 'slug', 'status')
 
 Organization_schema = OrganizationSchema()
-Organizations_schema = OrganizationSchema(many=True)	
+Organizations_schema = OrganizationSchema(many=True)		
