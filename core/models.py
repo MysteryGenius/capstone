@@ -6,20 +6,20 @@ from werkzeug.security import generate_password_hash, check_password_hash
 class User(db.Model):
 	__tablename__ = 'users'
 	id = Column(Integer, primary_key=True)
-	username = Column(String)
-	first_name = Column(String)
-	last_name = Column(String)
-	document_type = Column(String)	# Enum (Passport, NRIC, FIN)
-	pid = Column(String)			# Last 4 characters on personal IC
-	mobile_number = Column(String)
-	photo = Column(String)
-	residence_code = Column(String)
-	phone_area_code = Column(String)
-	password = Column(String)		# bcrypt hashed
-	email = Column(String, unique=True)
-	status = Column(String)			# Enum (active, disabled)
-	enrolled_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-	organisation_id = db.Column(db.Integer, db.ForeignKey('organisation.id'))
+	username = Column(String, nullable=False)
+	first_name = Column(String, nullable=False)
+	last_name = Column(String, nullable=False)
+	document_type = Column(String, nullable=True)					# Enum (Passport, NRIC, FIN)
+	pid = Column(String, nullable=False)							# Last 4 characters on personal IC
+	mobile_number = Column(String, nullable=False)
+	photo = Column(String, nullable=True)
+	residence_code = Column(String, nullable=False)
+	phone_area_code = Column(String, nullable=False)
+	password = Column(String, nullable=False)						# bcrypt hashed
+	email = Column(String, unique=True, nullable=False)
+	status = Column(String, default="active")						# Enum (active, disabled)
+	enrolled_id = db.Column(db.Integer, db.ForeignKey('operators.id'), nullable=True)
+	organisation_id = db.Column(db.Integer, db.ForeignKey('organisation.id'), nullable=True)
 
 	created_on = db.Column(db.DateTime, server_default=db.func.now())
 	updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
@@ -32,7 +32,7 @@ class User(db.Model):
 
 class UserSchema(ma.Schema):
 	class Meta:
-		fields = ('id', 'first_name', 'last_name', 'email', 'role')
+		fields = ('id', 'username', 'first_name', 'last_name', 'email', 'status', 'document_type', 'pid', 'mobile_number', 'photo', 'residence_code', 'phone_area_code', 'enrolled_id', 'organisation_id')
 
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
@@ -40,20 +40,20 @@ users_schema = UserSchema(many=True)
 class Operator(db.Model):
 	__tablename__ = 'operators'
 	id = Column(Integer, primary_key=True)
-	username = Column(String)
-	first_name = Column(String)
-	last_name = Column(String)
-	document_type = Column(String)	# Enum (Passport, NRIC, FIN)
-	pid = Column(String)			# Last 4 characters on personal IC
-	mobile_number = Column(String)
-	photo = Column(String)
-	residence_code = Column(String)
-	phone_area_code = Column(String)
-	password = Column(String)		# bcrypt hashed
-	email = Column(String, unique=True)
-	status = Column(String)			# Enum (active, disabled)
-	enrolled_id = db.Column(db.Integer, db.ForeignKey('operators.id'))
-	organisation_id = db.Column(db.Integer, db.ForeignKey('organisation.id'))
+	username = Column(String, nullable=False)
+	first_name = Column(String, nullable=False)
+	last_name = Column(String, nullable=False)
+	document_type = Column(String, nullable=True)					# Enum (Passport, NRIC, FIN)
+	pid = Column(String, nullable=False)							# Last 4 characters on personal IC
+	mobile_number = Column(String, nullable=False)
+	photo = Column(String, nullable=True)
+	residence_code = Column(String, nullable=False)
+	phone_area_code = Column(String, nullable=False)
+	password = Column(String, nullable=False)						# bcrypt hashed
+	email = Column(String, unique=True, nullable=False)
+	status = Column(String, default="active")						# Enum (active, disabled)
+	enrolled_id = db.Column(db.Integer, db.ForeignKey('operators.id'), nullable=True)
+	organisation_id = db.Column(db.Integer, db.ForeignKey('organisation.id'), nullable=True)
 
 	created_on = db.Column(db.DateTime, server_default=db.func.now())
 	updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
@@ -66,7 +66,7 @@ class Operator(db.Model):
 
 class OperatorSchema(ma.Schema):
 	class Meta:
-		fields = ('id', 'first_name', 'last_name', 'email', 'role')
+		fields = ('id', 'username', 'first_name', 'last_name', 'email', 'status', 'document_type', 'pid', 'mobile_number', 'photo', 'residence_code', 'phone_area_code', 'enrolled_id', 'organisation_id')
 
 operator_schema = OperatorSchema()
 operators_schema = OperatorSchema(many=True)
@@ -97,12 +97,12 @@ class FacialFeatures(db.Model):
 	created_on = db.Column(db.DateTime, server_default=db.func.now())
 	updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
 
-class FacialFeaturesSchema(ma.Schema):
+class FacialFeatureSchema(ma.Schema):
 	class Meta:
 		fields = ('id', 'user_id', 'face_vector')
 
-FacialFeature_schema = FacialFeatureSchema()
-FacialFeatures_schema = FacialFeatureSchema(many=True)
+facialFeature_schema = FacialFeatureSchema()
+facialFeatures_schema = FacialFeatureSchema(many=True)
 
 class UsageHistory(db.Model):
 	__tablename__ = 'usage_history'
@@ -124,7 +124,7 @@ UsageHistories_schema = UsageHistorySchema(many=True)
 class Organization(db.Model):
 	__tablename__ = 'organisation'
 	id = Column(Integer, primary_key=True)
-	created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
+	created_by = db.Column(db.Integer, db.ForeignKey('operators.id'))
 	name = Column(String)
 	slug = Column(String)
 	status = Column(String)
@@ -136,5 +136,5 @@ class OrganizationSchema(ma.Schema):
 	class Meta:
 		fields = ('id', 'created_by', 'name', 'slug', 'status')
 
-Organization_schema = OrganizationSchema()
-Organizations_schema = OrganizationSchema(many=True)		
+organization_schema = OrganizationSchema()
+organizations_schema = OrganizationSchema(many=True)		
