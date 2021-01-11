@@ -4,6 +4,8 @@
 
 #### Users
 
+('id', 'username', 'first_name', 'last_name', 'email', 'status', 'document_type', 'pid', 'mobile_number', 'photo', 'residence_code', 'phone_area_code', 'enrolled_id', 'organisation_id')
+
 - Get all users [GET]
 ```
 /users/all
@@ -17,7 +19,11 @@
 /users/add
 ```
 
+
+
 #### Operators
+
+('id', 'username', 'first_name', 'last_name', 'email', 'status', 'document_type', 'pid', 'mobile_number', 'photo', 'residence_code', 'phone_area_code', 'enrolled_id', 'organisation_id')
 
 - Get all operators
 ```
@@ -32,7 +38,10 @@ operators/all
 /operators/add
 ```
 
+
 #### Organization
+
+('id', 'created_by', 'name', 'slug', 'status')
 
 - Get all organizations
 ```
@@ -48,6 +57,8 @@ organizations/all
 ```
 
 #### FacialFeatures
+
+('id', 'user_id', 'face_vector')
 
 - Get all features
 ```
