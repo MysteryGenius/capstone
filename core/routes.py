@@ -3,6 +3,12 @@ from flask import Flask, jsonify, request
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
 from flask_cors import CORS, cross_origin
+import os
+from twilio.rest import Client
+
+account_sid = 'AC13cbd0428b9f0dd27bda86f23863f9b1'
+auth_token = '24bf6e756984b0f205d67091d23f02f1'
+client = Client(account_sid, auth_token)
 
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -24,8 +30,8 @@ def upload_file():
             return 'No selected file'
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                return 200
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return 200
 
 @app.route('/')
 @cross_origin()
@@ -245,6 +251,41 @@ def new_feature():
     db.session.add(commit_new_feature)
     db.session.commit()
     return jsonify(message="FacialFeature created!"), 200
+
+
+##### Auth Stuff #####
+
+@app.route('/auth/sms/start',  methods=['POST'])
+@cross_origin()
+def sms_challenge():
+    if request.is_json:
+        mobile_number = request.json['mobile_number']
+    else:
+        mobile_number = request.form['mobile_number']
+
+    verification = client.verify \
+                     .services('VA20d99c0da1ca85b123ef6c6dd1325875') \
+                     .verifications \
+                     .create(to=mobile_number, channel='sms')
+    return jsonify(message="Challenge created!"), 200
+
+@app.route('/auth/sms/verify',  methods=['POST'])
+@cross_origin()
+def sms_verify():
+    if request.is_json:
+        mobile_number = request.json['mobile_number']
+        code = request.json['code']
+    else:
+        mobile_number = request.form['mobile_number']
+        code = request.form['code']
+
+    verification_check = client.verify \
+                     .services('VA20d99c0da1ca85b123ef6c6dd1325875') \
+                     .verification_checks \
+                     .create(to=mobile_number, code=code)
+
+    return jsonify(message="Challege Verified : " + verification_check.status), 200
+
 
 
 @app.route('/session')

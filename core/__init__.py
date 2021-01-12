@@ -5,12 +5,14 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token
 from flask_cors import CORS, cross_origin
+from sqlalchemy import create_engine
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_mapping(
     SECRET_KEY = 'dev', # change in production
     JWT_SECRET_KEY = 'super-secret',
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(app.instance_path, 'core.db')
+    SQLALCHEMY_DATABASE_URI = 'mssql+pyodbc://scott:tiger@mydsn',
+    SQLALCHEMY_TRACK_MODIFICATIONS=False
 )
 
 cors = CORS(app)
