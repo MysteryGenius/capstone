@@ -6,9 +6,9 @@ from flask_cors import CORS, cross_origin
 import os
 from twilio.rest import Client
 
-account_sid = 'AC13cbd0428b9f0dd27bda86f23863f9b1'
-auth_token = '24bf6e756984b0f205d67091d23f02f1'
-client = Client(account_sid, auth_token)
+# account_sid = 'AC13cbd0428b9f0dd27bda86f23863f9b1'
+# auth_token = 'de6787d9a7ff90c3b8ead763b44e676e'
+# client = Client(account_sid, auth_token)
 
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -184,7 +184,7 @@ def organizations():
     organizations = Organization.query.all()
     result = organizations_schema.dump(organizations)
     return jsonify(result)
-    
+        
 @app.route('/organizations/<organization_id>',  methods=['GET', 'DELETE'])
 @cross_origin()
 def get_organization(organization_id):
@@ -305,16 +305,23 @@ def login():
         email = request.form['email']
         password = request.form['password']
 
-    test = User.query.filter_by(email=email).first()
+    test1 = User.query.filter_by(email=email).first()
+    # test2 = Operator.query.filter_by(email=email).first()
 
-    if test is None or not test.check_password(password):
+    if test1 is None or not test1.check_password(password):
         return jsonify(message="Bad email or password"), 401
+    # elif test2 is None or not test2.check_password(password):
+    #     return jsonify(message="Bad email or password"), 401
     else:
+        # if test1 is None:
+        #     test = test2
+        # else:
+        #     test = test1
         # access_token = create_access_token(identity=email)
-        curr_session = Session(user_id=test.id)
+        curr_session = Session(user_id=test1.id)
         db.session.add(curr_session)
         db.session.commit()
-        curr_session = Session.query.filter_by(user_id=test.id).first()
+        curr_session = Session.query.filter_by(user_id=test1.id).first()
         result = session_schema.dump(curr_session)
         return jsonify(message="Session created!", session=result), 200
 

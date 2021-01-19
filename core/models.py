@@ -9,6 +9,7 @@ class User(db.Model):
 	username = Column(String, nullable=False)
 	first_name = Column(String, nullable=False)
 	last_name = Column(String, nullable=False)
+	role = Column(String, nullable=False)
 	document_type = Column(String, nullable=True)					# Enum (Passport, NRIC, FIN)
 	pid = Column(String, nullable=False)							# Last 4 characters on personal IC
 	mobile_number = Column(String, nullable=False)
