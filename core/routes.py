@@ -123,7 +123,7 @@ def new_user_phone():
 
 @app.route('/user/password',  methods=['POST'])
 @cross_origin()
-def new_user_phone():
+def new_user_password():
     if request.is_json:
         id = request.json['id']
         password = request.json['password']
