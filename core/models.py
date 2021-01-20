@@ -21,8 +21,8 @@ class User(db.Model):
 	email = Column(String, unique=True)
 	status = Column(String, default="active")						# Enum (active, disabled)
 
-	enrolled_id = db.Column(db.Integer, db.ForeignKey('user.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=True)
-	organisation_id = db.Column(db.Integer, db.ForeignKey('organisation.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=True)
+	enrolled_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=True)
+	organisation_id = db.Column(db.Integer, db.ForeignKey('organisation.id', ondelete="CASCADE"), nullable=True)
 
 	created_on = db.Column(db.DateTime, server_default=db.func.now())
 	updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
@@ -78,7 +78,7 @@ users_schema = UserSchema(many=True)
 class Session(db.Model):
 	__tablename__ = 'sessions'
 	id = Column(Integer, primary_key=True)
-	user_id = db.Column(db.Integer, db.ForeignKey('users.id', onupdate="CASCADE", ondelete="CASCADE"))
+	user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
 	jwt = Column(String, default='unassigned')
 
 	created_on = db.Column(db.DateTime, server_default=db.func.now())
@@ -94,7 +94,7 @@ sessions_schema = SessionSchema(many=True)
 class FacialFeatures(db.Model):
 	__tablename__ = 'features'
 	id = Column(Integer, primary_key=True)
-	user_id = db.Column(db.Integer, db.ForeignKey('users.id', onupdate="CASCADE", ondelete="CASCADE"))
+	user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
 	face_vector = Column(Float)
 
 	created_on = db.Column(db.DateTime, server_default=db.func.now())
@@ -110,7 +110,7 @@ facialFeatures_schema = FacialFeatureSchema(many=True)
 class UsageHistory(db.Model):
 	__tablename__ = 'usage_history'
 	id = Column(Integer, primary_key=True)
-	user_id = db.Column(db.Integer, db.ForeignKey('users.id', onupdate="CASCADE", ondelete="CASCADE"))
+	user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
 	geocode = Column(String)
 	history = Column(String)
 
@@ -127,7 +127,7 @@ UsageHistories_schema = UsageHistorySchema(many=True)
 class Organization(db.Model):
 	__tablename__ = 'organisation'
 	id = Column(Integer, primary_key=True)
-	created_by = db.Column(db.Integer, db.ForeignKey('operators.id', onupdate="CASCADE", ondelete="CASCADE"))
+	created_by = db.Column(db.Integer, db.ForeignKey('operators.id', ondelete="CASCADE"))
 	name = Column(String)
 	email = Column(String)
 	slug = Column(String)
