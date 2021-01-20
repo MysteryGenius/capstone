@@ -28,9 +28,33 @@ def db_seed():
         role='user',
 		email='jayz@oi.wtf')
 
+    test_user_3 = User(
+        first_name='Yue Kai',
+        last_name='Tan',
+        role='user',
+        email='sam@oi.wtf')
+
+    test_user_4 = User(
+        first_name='Jian Zhe',
+        last_name='Tan',
+        role='user',
+        email='onella@oi.wtf')
+
+    test_user_5 = User(
+        first_name='Jabier',
+        last_name='Wubbalubba',
+        role='operator',
+        email='jabier@oi.wtf')
+
     test_user_1.set_password('password')
     test_user_2.set_password('password')
+    test_user_3.set_password('password')
+    test_user_4.set_password('password')
+    test_user_5.set_password('password')
     db.session.add(test_user_1)
     db.session.add(test_user_2)
+    db.session.add(test_user_3)
+    db.session.add(test_user_4)
+    db.session.add(test_user_5)
     db.session.commit()
     print("Database Seeded")
