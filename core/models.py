@@ -13,6 +13,7 @@ class User(db.Model):
 	document_type = Column(String, nullable=True)					# Enum (Passport, NRIC, FIN)
 	pid = Column(String)							# Last 4 characters on personal IC
 	mobile_number = Column(String)
+	country = Column(String)
 	photo = Column(String, nullable=True)
 	residence_code = Column(String)
 	phone_area_code = Column(String)
@@ -34,7 +35,7 @@ class User(db.Model):
 
 class UserSchema(ma.Schema):
 	class Meta:
-		fields = ('id', 'username', 'first_name', 'last_name', 'role', 'email', 'status', 'document_type', 'pid', 'mobile_number', 'photo', 'residence_code', 'phone_area_code', 'enrolled_id', 'organisation_id')
+		fields = ('id', 'username', 'first_name', 'last_name', 'country', 'role', 'email', 'status', 'document_type', 'pid', 'mobile_number', 'photo', 'residence_code', 'phone_area_code', 'enrolled_id', 'organisation_id')
 
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
