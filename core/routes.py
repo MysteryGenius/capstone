@@ -335,4 +335,5 @@ def face():
 def check():
     # Access the identity of the current user with get_jwt_identity
     current_user = get_jwt_identity()
-    return jsonify(user=current_user), 200
+    curr_user = User.query.filter_by(email=current_user).first()
+    return jsonify(user=curr_user.id), 200
