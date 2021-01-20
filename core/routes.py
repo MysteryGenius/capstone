@@ -296,7 +296,6 @@ def sessions():
     return jsonify(result)
 
 @app.route('/login', methods=['POST'])
-@cross_origin()
 def login():
     if request.is_json:
         email = request.json['email']
@@ -305,25 +304,13 @@ def login():
         email = request.form['email']
         password = request.form['password']
 
-    test1 = User.query.filter_by(email=email).first()
-    test2 = Operator.query.filter_by(email=email).first()
+    test = User.query.filter_by(email=email).first()
 
-    if test1 is None or not test1.check_password(password):
-        return jsonify(message="Bad email or password"), 401
-    elif test2 is None or not test2.check_password(password):
+    if test is None or not test.check_password(password):
         return jsonify(message="Bad email or password"), 401
     else:
-        if test1 is None:
-            test = test2
-        else:
-            test = test1
-        # access_token = create_access_token(identity=email)
-        curr_session = Session(user_id=test.id)
-        db.session.add(curr_session)
-        db.session.commit()
-        curr_session = Session.query.filter_by(user_id=test.id).first()
-        result = session_schema.dump(curr_session)
-        return jsonify(message="Session created!", session=result), 200
+        access_token = create_access_token(identity=email)
+        return jsonify(message="Login succeeded!", access_token=access_token) 
 
 @app.route('/face', methods=['POST'])
 @cross_origin()
