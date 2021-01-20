@@ -106,6 +106,36 @@ def new_user():
     db.session.commit()
     return jsonify(message="User created!"), 200
 
+@app.route('/user/phone',  methods=['POST'])
+@cross_origin()
+def new_user_phone():
+    if request.is_json:
+        id = request.json['id']
+        new_number = request.json['new_number']
+    else:
+        id = request.form['id']
+        new_number = request.json['new_number']
+
+    user = User.query.filter_by(id=id).first()
+    user.mobile_number = new_number
+    db.session.commit()
+    return jsonify(message="User created!"), 200
+
+@app.route('/user/password',  methods=['POST'])
+@cross_origin()
+def new_user_phone():
+    if request.is_json:
+        id = request.json['id']
+        password = request.json['password']
+    else:
+        id = request.form['id']
+        password = request.json['password']
+
+    user = User.query.filter_by(id=id).first()
+    user.set_password(password)
+    db.session.commit()
+    return jsonify(message="User created!"), 200
+
 ##### Operators #####
 
 # Get all operators
