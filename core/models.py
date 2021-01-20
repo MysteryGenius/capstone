@@ -128,6 +128,7 @@ class Organization(db.Model):
 	id = Column(Integer, primary_key=True)
 	created_by = db.Column(db.Integer, db.ForeignKey('operators.id', onupdate="CASCADE", ondelete="CASCADE"))
 	name = Column(String)
+	email = Column(String)
 	slug = Column(String)
 	status = Column(String)
 
@@ -136,7 +137,7 @@ class Organization(db.Model):
 
 class OrganizationSchema(ma.Schema):
 	class Meta:
-		fields = ('id', 'created_by', 'name', 'slug', 'status')
+		fields = ('id', 'created_by', 'name', 'email', 'slug', 'status')
 
 organization_schema = OrganizationSchema()
 organizations_schema = OrganizationSchema(many=True)		
