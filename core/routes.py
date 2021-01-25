@@ -364,7 +364,7 @@ def login():
         return jsonify(message="Bad email or password"), 401
     else:
         access_token = create_access_token(identity=email)
-        commit_new_session = UsageHistory(user_id=user_id)
+        commit_new_session = UsageHistory(user_id=user.id)
         db.session.add(commit_new_session)
         db.session.commit()
         return jsonify(message="Login succeeded!", access_token=access_token) 
