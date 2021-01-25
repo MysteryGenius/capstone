@@ -49,6 +49,15 @@ def users():
 	result = users_schema.dump(users)
 	return jsonify(result)
 
+# Get all user
+
+@app.route('/users/all/users')
+@cross_origin()
+def users_users():
+    users = User.query.filter_by(role='user').all()
+    result = users_schema.dump(users)
+    return jsonify(result)
+
 # Get a single user or delete user using user_id    
 
 @app.route('/users/<user_id>',  methods=['GET', 'DELETE'])
@@ -106,7 +115,7 @@ def new_user():
     db.session.commit()
     return jsonify(message="User created!"), 200
 
-@app.route('/user/phone',  methods=['POST'])
+@app.route('/user/phone_area_code',  methods=['POST'])
 @cross_origin()
 def new_user_phone():
     if request.is_json:
@@ -317,6 +326,12 @@ def sms_verify():
     return jsonify(message="Challege Verified : " + verification_check.status), 200
 
 
+@app.route('/session/<user_id>')
+@cross_origin()
+def userSessions():
+    sessions = UsageHistory.query.filter_by(user_id=user_id).all()
+    result = usageHistories_schema.dump(sessions)
+    return jsonify(result)
 
 @app.route('/session')
 @cross_origin()
@@ -340,6 +355,9 @@ def login():
         return jsonify(message="Bad email or password"), 401
     else:
         access_token = create_access_token(identity=email)
+        commit_new_session = UsageHistory(user_id=user_id)
+        db.session.add(commit_new_session)
+        db.session.commit()
         return jsonify(message="Login succeeded!", access_token=access_token) 
 
 @app.route('/face', methods=['POST'])
