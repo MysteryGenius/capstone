@@ -121,8 +121,8 @@ class UsageHistorySchema(ma.Schema):
 	class Meta:
 		fields = ('id', 'user_id', 'geocode', 'history')
 
-UsageHistory_schema = UsageHistorySchema()
-UsageHistories_schema = UsageHistorySchema(many=True)
+usageHistory_schema = UsageHistorySchema()
+usageHistories_schema = UsageHistorySchema(many=True)
 
 class Organization(db.Model):
 	__tablename__ = 'organisation'
@@ -130,6 +130,7 @@ class Organization(db.Model):
 	created_by = db.Column(db.Integer, db.ForeignKey('operators.id', ondelete="CASCADE"))
 	name = Column(String)
 	email = Column(String)
+	contact = Column(String)
 	slug = Column(String)
 	status = Column(String)
 
@@ -138,7 +139,7 @@ class Organization(db.Model):
 
 class OrganizationSchema(ma.Schema):
 	class Meta:
-		fields = ('id', 'created_by', 'name', 'email', 'slug', 'status')
+		fields = ('id', 'created_by', 'contact', 'name', 'email', 'slug', 'status')
 
 organization_schema = OrganizationSchema()
 organizations_schema = OrganizationSchema(many=True)		
