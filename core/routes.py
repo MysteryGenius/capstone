@@ -335,7 +335,7 @@ def userSessions():
 
 @app.route('/session/users')
 @cross_origin()
-def userSessions():
+def userUsersSessions():
     users = User.query.filter_by(role='user').all()
     sessions = UsageHistory.query.filter_by(user_id=users.id).all()
     result = usageHistories_schema.dump(sessions)
