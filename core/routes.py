@@ -94,13 +94,13 @@ def login():
     if test is None or not test.check_password(password):
         return jsonify(message="Bad email or password"), 401
     else:
-        # access_token = create_access_token(identity=email)
+        access_token = create_access_token(identity=email)
         curr_session = Session(user_id=test.id)
         db.session.add(curr_session)
         db.session.commit()
         curr_session = Session.query.filter_by(user_id=test.id).first()
         result = session_schema.dump(curr_session)
-        return jsonify(message="Session created!", session=result), 200
+        return jsonify(message="Session created!", session=result, token=access_token), 200
 
 @app.route('/face', methods=['POST'])
 @cross_origin()
