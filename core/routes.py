@@ -333,6 +333,15 @@ def userSessions():
     result = usageHistories_schema.dump(sessions)
     return jsonify(result)
 
+@app.route('/session/users')
+@cross_origin()
+def userSessions():
+    users = User.query.filter_by(role='user').all()
+    sessions = UsageHistory.query.filter_by(user_id=users.id).all()
+    result = usageHistories_schema.dump(sessions)
+    return jsonify(result)
+
+
 @app.route('/session')
 @cross_origin()
 def sessions():
