@@ -11,7 +11,8 @@ app = Flask(__name__, instance_relative_config=True)
 app.config.from_mapping(
     SECRET_KEY = 'dev', # change in production
     JWT_SECRET_KEY = 'super-secret',
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(app.instance_path, 'core.db'),
+    SQLALCHEMY_DATABASE_URI = 'mssql+pyodbc://Test:ToorToor2020@Test',
+    # SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(app.instance_path, 'core.db'),
     SQLALCHEMY_TRACK_MODIFICATIONS=False
 )
 

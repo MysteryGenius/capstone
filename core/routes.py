@@ -174,77 +174,7 @@ def new_user_password():
     user = User.query.filter_by(id=id).first()
     result = users_schema.dump(users)
     return jsonify(result), 201
-
-##### Operators #####
-
-# Get all operators
-
-# @app.route('/operators/all')
-# @cross_origin()
-# def operators():
-#     operators = Operator.query.all()
-#     result = operators_schema.dump(operators)
-#     return jsonify(result)
-
-# # Get a single operator or delete operator using user_id   
-
-# @app.route('/operators/<operator_id>',  methods=['GET', 'DELETE'])
-# @cross_origin()
-# def get_operator(operator_id):
-#     if request.method == 'GET':
-#         operator = Operator.query.filter_by(id=operator_id).first()
-#         result = operator_schema.dump(operator)
-#         return jsonify(result)
-#     if request.method == 'DELETE':
-#         operator = Operator.query.filter_by(id=operator_id).delete()
-#         db.session.commit()
-#         return 200
-
-# # Create a single operator
-
-# @app.route('/operators/add',  methods=['POST'])
-# @cross_origin()
-# def new_operator():
-#     if request.is_json:
-#         email = request.json['email']
-#         first_name = request.json['first_name']
-#         last_name = request.json['last_name']
-#         username = request.json['username']
-#         password = request.json['password']
-#         document_type = request.json['document_type']
-#         pid = request.json['pid']
-#         role = request.json['role']
-#         mobile_number = request.json['mobile_number']
-#         photo = request.json['photo']
-#         residence_code = request.json['residence_code']
-#         phone_area_code = request.json['phone_area_code']
-#         enrolled_id = request.json['enrolled_id']
-#         organisation_id = request.json['organisation_id']
-#     else:
-#         email = request.form['email']
-#         first_name = request.form['first_name']
-#         last_name = request.form['last_name']
-#         username = request.form['username']
-#         password = request.form['password']
-#         document_type = request.form['document_type']
-#         pid = request.form['pid']
-#         role = request.form['role']
-#         mobile_number = request.form['mobile_number']
-#         photo = request.form['photo']
-#         residence_code = request.form['residence_code']
-#         phone_area_code = request.form['phone_area_code']
-#         enrolled_id = request.form['enrolled_id']
-#         organisation_id = request.form['organisation_id']
-
-#     commit_new_operator = Operator(
-#         email=email, password=password, first_name=first_name, last_name=last_name, username=username, document_type=document_type, 
-#         pid=pid, mobile_number=mobile_number, photo=photo, residence_code=residence_code, phone_area_code=phone_area_code, 
-#         enrolled_id=enrolled_id, organisation_id=organisation_id, role=role
-#     )
-#     db.session.add(commit_new_operator)
-#     db.session.commit()
-#     return jsonify(message="Operator created!"), 200
-
+    
 ##### Organization #####
 
 # Get all organizations
