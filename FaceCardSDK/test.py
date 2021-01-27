@@ -12,11 +12,11 @@ from threading import Timer, Thread, Event
 from skimage import io
 import tensorflow as tf
 import tensorboard as tb
-from utils import face_preprocess
-from nets.mtcnn_model import P_Net, R_Net, O_Net
-from Detection.MtcnnDetector import MtcnnDetector
-from Detection.detector import Detector
-from Detection.fcn_detector import FcnDetector
+from FaceCardSDK.utils import face_preprocess
+from FaceCardSDK.nets.mtcnn_model import P_Net, R_Net, O_Net
+from FaceCardSDK.Detection.MtcnnDetector import MtcnnDetector
+from FaceCardSDK.Detection.detector import Detector
+from FaceCardSDK.Detection.fcn_detector import FcnDetector
 
 tf.compat.v1.disable_v2_behavior()
 tf.gfile = tb.compat.tensorflow_stub.io.gfile
@@ -32,6 +32,8 @@ conf.read("FaceCardSDK/config/main.cfg")
 MODEL_PATH = conf.get("MOBILEFACENET", "MODEL_PATH")
 VERIFICATION_THRESHOLD = float(conf.get("MOBILEFACENET", "VERIFICATION_THRESHOLD"))
 
+
+# Enrollment
 def get_test_image(mtcnn_detector):
     # Save as jpg for decoding
     # face_image = 'Justin Chan.jpg'
@@ -39,7 +41,7 @@ def get_test_image(mtcnn_detector):
     with tf.compat.v1.Session() as sess:
         sess.run(tf.compat.v1.global_variables_initializer())
         faces, landmarks = mtcnn_detector.detect(frame)
-        if faces.shape[0] is not 0:
+        if faces.shape[0] != 0:
             input_images = np.zeros((faces.shape[0], 112,112,3))
             for i, face in enumerate(faces):
                 if round(faces[i, 4], 6) > 0:
@@ -115,6 +117,7 @@ def load_facecardmodel(model):
         saver.restore(tf.compat.v1.get_default_session(), os.path.join(model_exp, ckpt_file))
 
 def return_embeddings(image, mtcnn_detector):
+    nimg = float()
     with tf.compat.v1.Graph().as_default():
         with tf.compat.v1.Session() as sess:
             load_facecardmodel("./FaceCardSDK/models/facecardnet_model/facecardmodel.pb")
@@ -155,6 +158,11 @@ def obtain_enrol_embedding(image):
     
     return embed
 
+def obtain_enrol_embedding_from_filepath(path):
+    frame = cv.imread(path)
+    return obtain_enrol_embedding(frame)
+
+# match
 def match_user(image, savedImage):
     embedding = obtain_enrol_embedding(image)
     return True if embedding == savedImage else False

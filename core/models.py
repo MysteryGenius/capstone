@@ -58,11 +58,11 @@ class SessionSchema(ma.Schema):
 session_schema = SessionSchema()
 sessions_schema = SessionSchema(many=True)
 
-class FacialFeatures(db.Model):
+class FacialFeature(db.Model):
 	__tablename__ = 'features'
 	id = Column(Integer, primary_key=True)
 	user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
-	face_vector = Column(Float)
+	face_vector = Column(String)
 
 	created_on = db.Column(db.DateTime, server_default=db.func.now())
 	updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())

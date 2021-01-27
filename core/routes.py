@@ -9,6 +9,8 @@ from os.path import join, dirname, realpath
 from twilio.rest import Client
 import numpy as np
 
+import FaceCardSDK.test as faceCard
+
 account_sid = 'AC13cbd0428b9f0dd27bda86f23863f9b1'
 auth_token = 'de6787d9a7ff90c3b8ead763b44e676e'
 client = Client(account_sid, auth_token)
@@ -87,11 +89,19 @@ def upload_file():
         if file and allowed_file(file.filename) or file_ext != validate_image(uploaded_file.stream):
             filename = secure_filename(file.filename)
             basedir = os.path.abspath(os.path.dirname(__file__))
-            file.save(os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename))
+            fileAbsDir = os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename)
+            file.save(fileAbsDir)
+            try: 
+                frame = faceCard.obtain_enrol_embedding_from_filepath(fileAbsDir)
+            except:
+                return jsonify(message="Image Errors"), 400
             user = User.query.filter_by(id=id).first()
             user.photo = filename
+
+            commit_new_feature = FacialFeature(user_id=user.id, face_vector=frame)
+            db.session.add(commit_new_feature)            
             db.session.commit()
-            return jsonify('success!'), 204
+            return jsonify(message="Success"), 200
         return "Invalid image", 400
 
 

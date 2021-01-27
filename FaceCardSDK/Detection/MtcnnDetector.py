@@ -5,7 +5,7 @@ import sys
 import tensorflow as tf
 
 sys.path.append("../")
-from Detection.nms import py_nms
+from FaceCardSDK.Detection.nms import py_nms
 
 
 class MtcnnDetector(object):
