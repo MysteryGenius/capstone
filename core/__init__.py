@@ -11,13 +11,13 @@ app = Flask(__name__, instance_relative_config=True)
 app.config.from_mapping(
     SECRET_KEY = 'dev', # change in production
     JWT_SECRET_KEY = 'super-secret',
-    SQLALCHEMY_DATABASE_URI = 'mssql+pyodbc://scott:tiger@mydsn',
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(app.instance_path, 'core.db'),
     SQLALCHEMY_TRACK_MODIFICATIONS=False
 )
 
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
-app.config['UPLOAD_FOLDER'] = '/uploads'
+app.config['UPLOAD_FOLDER'] = 'uploads'
 
 db = SQLAlchemy(app)
 ma = Marshmallow(app)

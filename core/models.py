@@ -125,9 +125,9 @@ usageHistory_schema = UsageHistorySchema()
 usageHistories_schema = UsageHistorySchema(many=True)
 
 class Organization(db.Model):
-	__tablename__ = 'organisation'
+	__tablename__ = 'organisations'
 	id = Column(Integer, primary_key=True)
-	created_by = db.Column(db.Integer, db.ForeignKey('operators.id', ondelete="CASCADE"))
+	created_by = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
 	name = Column(String)
 	email = Column(String)
 	contact = Column(String)

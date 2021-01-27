@@ -1,9 +1,11 @@
 from core import app, db
 from flask import Flask, jsonify, request
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
 from flask_cors import CORS, cross_origin
 import os
+from os.path import join, dirname, realpath
 from twilio.rest import Client
 
 account_sid = 'AC13cbd0428b9f0dd27bda86f23863f9b1'
@@ -19,19 +21,36 @@ def allowed_file(filename):
     return '.' in filename and \
         filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def validate_image(stream):
+    header = stream.read(512)
+    stream.seek(0)
+    format = imghdr.what(None, header)
+    if not format:
+        return None
+    return '.' + (format if format != 'jpeg' else 'jpg')
+
 @app.route('/user/image/upload', methods=['POST'])
 def upload_file():
     if request.method == 'POST':
+        if request.is_json:
+            id = request.json['id']
+        else:
+            id = request.form['id']
         # check if the post request has the file part
         if 'file' not in request.files:
             return 'No file part'
         file = request.files['file']
         if file.filename == '':
             return 'No selected file'
-        if file and allowed_file(file.filename):
+        if file and allowed_file(file.filename) or file_ext != validate_image(uploaded_file.stream):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return 200
+            basedir = os.path.abspath(os.path.dirname(__file__))
+            file.save(os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename))
+            user = User.query.filter_by(id=id).first()
+            user.photo = filename
+            db.session.commit()
+            return jsonify('success!'), 204
+        return "Invalid image", 400
 
 @app.route('/')
 @cross_origin()
@@ -336,8 +355,8 @@ def userSessions():
 @app.route('/session/users')
 @cross_origin()
 def userUsersSessions():
-    users = User.query.filter_by(role='user').all()
-    sessions = UsageHistory.query.filter_by(user_id=users.id).all()
+    users = [value for value, in db.session.query(User.id).all()]
+    sessions = db.session.query(UsageHistory).filter(UsageHistory.user_id.in_(users)).all()
     result = usageHistories_schema.dump(sessions)
     return jsonify(result)
 
