@@ -109,7 +109,6 @@ def new_user():
         document_type = request.json['document_type']
         pid = request.json['pid']
         mobile_number = request.json['mobile_number']
-        photo = request.json['photo']
         residence_code = request.json['residence_code']
         phone_area_code = request.json['phone_area_code']
         enrolled_id = request.json['enrolled_id']
@@ -123,7 +122,6 @@ def new_user():
         document_type = request.form['document_type']
         pid = request.form['pid']
         mobile_number = request.form['mobile_number']
-        photo = request.form['photo']
         residence_code = request.form['residence_code']
         phone_area_code = request.form['phone_area_code']
         enrolled_id = request.form['enrolled_id']
@@ -136,7 +134,10 @@ def new_user():
     )
     db.session.add(commit_new_user)
     db.session.commit()
-    return jsonify(message="User created!"), 200
+
+    user = User.query.filter_by(email=email).first()
+    result = users_schema.dump(users)
+    return jsonify(result), 201
 
 @app.route('/user/phone_area_code',  methods=['POST'])
 @cross_origin()
@@ -151,7 +152,9 @@ def new_user_phone():
     user = User.query.filter_by(id=id).first()
     user.mobile_number = new_number
     db.session.commit()
-    return jsonify(message="User created!"), 200
+    user = User.query.filter_by(id=id).first()
+    result = users_schema.dump(users)
+    return jsonify(result), 201
 
 @app.route('/user/password',  methods=['POST'])
 @cross_origin()
@@ -166,7 +169,9 @@ def new_user_password():
     user = User.query.filter_by(id=id).first()
     user.set_password(password)
     db.session.commit()
-    return jsonify(message="User created!"), 200
+    user = User.query.filter_by(id=id).first()
+    result = users_schema.dump(users)
+    return jsonify(result), 201
 
 ##### Operators #####
 
@@ -352,18 +357,40 @@ def sms_verify():
 @app.route('/session/<user_id>')
 @cross_origin()
 def userSessions():
-    sessions = UsageHistory.query.filter_by(user_id=user_id).all()
+    session = UsageHistory.query.filter_by(user_id=user_id).all()
+    result = usageHistory_schema.dump(session)
+    return jsonify(result)
+
+@app.route('/session/all')
+@cross_origin()
+def userSessions():
+    sessions = UsageHistory.query.all()
     result = usageHistories_schema.dump(sessions)
     return jsonify(result)
 
 @app.route('/session/users')
 @cross_origin()
 def userUsersSessions():
-    users = [value for value, in db.session.query(User.id).all()]
+    users = [value for value, in db.session.query(User.id).filter_by(role='user').all()]
     sessions = db.session.query(UsageHistory).filter(UsageHistory.user_id.in_(users)).all()
     result = usageHistories_schema.dump(sessions)
     return jsonify(result)
 
+@app.route('/session/operators')
+@cross_origin()
+def userUsersSessions():
+    users = [value for value, in db.session.query(User.id).filter_by(role='operator').all()]
+    sessions = db.session.query(UsageHistory).filter(UsageHistory.user_id.in_(users)).all()
+    result = usageHistories_schema.dump(sessions)
+    return jsonify(result)
+
+@app.route('/session/admin')
+@cross_origin()
+def userUsersSessions():
+    users = [value for value, in db.session.query(User.id).filter_by(role='admin').all()]
+    sessions = db.session.query(UsageHistory).filter(UsageHistory.user_id.in_(users)).all()
+    result = usageHistories_schema.dump(sessions)
+    return jsonify(result)
 
 @app.route('/session')
 @cross_origin()
