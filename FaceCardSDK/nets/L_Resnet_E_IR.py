@@ -61,11 +61,11 @@ def residual_unit_v3(data, out_filter, stride, dim_match, trainable, name):
     # print(name)
 
     bn1 = batch_normalization(data, variance_epsilon=2e-5, trainable=trainable, name=name + '_bn1')
-    bn1_pad = tf.pad(bn1, paddings=[[0, 0], [1, 1], [1, 1], [0, 0]])
+    bn1_pad = tf.pad(tensor=bn1, paddings=[[0, 0], [1, 1], [1, 1], [0, 0]])
     conv1 = convolution(bn1_pad, group=1, shape=shape, strides=[1, 1], padding='VALID', trainable=trainable, name=name + '_conv1')
     bn2 = batch_normalization(conv1, variance_epsilon=2e-5, trainable=trainable, name=name + '_bn2')
     relu1 = prelu(bn2, trainable=trainable, name=name + '_relu1')
-    relu1_pad = tf.pad(relu1, paddings=[[0, 0], [1, 1], [1, 1], [0, 0]])
+    relu1_pad = tf.pad(tensor=relu1, paddings=[[0, 0], [1, 1], [1, 1], [0, 0]])
     shape[-2] = relu1_pad.get_shape().as_list()[-1]
     conv2 = convolution(relu1_pad, group=1, shape=shape, strides=stride, padding='VALID', trainable=trainable, name=name + '_conv2')
     bn3 = batch_normalization(conv2, variance_epsilon=2e-5, trainable=trainable, name=name + '_bn3')
@@ -88,7 +88,7 @@ def residual_unit(data, out_filter, stride, dim_match, trainable, name, **kwargs
     return residual_unit_v3(data, out_filter, stride, dim_match, trainable, name=name, **kwargs)
 
 def prelu(input, trainable, name):
-    gamma = tf.get_variable(initializer=tf.constant(0.25,dtype=tf.float32,shape=[input.get_shape()[-1]]), trainable=trainable, name=name + "_gamma")
+    gamma = tf.compat.v1.get_variable(initializer=tf.constant(0.25,dtype=tf.float32,shape=[input.get_shape()[-1]]), trainable=trainable, name=name + "_gamma")
     return tf.maximum(0.0, input) + gamma * tf.minimum(0.0, input)
 
 MOVING_AVERAGE_DECAY = 0.9997
@@ -105,17 +105,17 @@ def batch_normalization(input, trainable, name, **kwargs):
     input_shape = input.get_shape()
     shape = input_shape.as_list()[-1::]
     axis = list(range(len(input_shape) - 1))
-    moving_mean = tf.get_variable(shape=shape, initializer=tf.zeros_initializer, trainable=trainable, name=name + "_mean")
-    moving_variance = tf.get_variable(shape=shape, initializer=tf.ones_initializer, trainable=trainable, name=name + "_var")
-    offset = tf.get_variable(shape=shape, initializer=tf.zeros_initializer, trainable=trainable, name=name + "_bias")
-    scale = tf.get_variable(shape=shape, initializer=tf.ones_initializer, trainable=trainable, name=name + "_scale") if name != 'fc1' else None
+    moving_mean = tf.compat.v1.get_variable(shape=shape, initializer=tf.compat.v1.zeros_initializer, trainable=trainable, name=name + "_mean")
+    moving_variance = tf.compat.v1.get_variable(shape=shape, initializer=tf.compat.v1.ones_initializer, trainable=trainable, name=name + "_var")
+    offset = tf.compat.v1.get_variable(shape=shape, initializer=tf.compat.v1.zeros_initializer, trainable=trainable, name=name + "_bias")
+    scale = tf.compat.v1.get_variable(shape=shape, initializer=tf.compat.v1.ones_initializer, trainable=trainable, name=name + "_scale") if name != 'fc1' else None
 
-    mean, variance = tf.nn.moments(input, axis)
+    mean, variance = tf.nn.moments(x=input, axes=axis)
     update_moving_mean = moving_averages.assign_moving_average(moving_mean, mean, BN_DECAY)
     update_moving_variance = moving_averages.assign_moving_average(moving_variance, variance, BN_DECAY)
-    tf.add_to_collection(UPDATE_OPS_COLLECTION, update_moving_mean)
-    tf.add_to_collection(UPDATE_OPS_COLLECTION, update_moving_variance)
-    is_training = tf.convert_to_tensor(trainable, dtype='bool', name='is_training')
+    tf.compat.v1.add_to_collection(UPDATE_OPS_COLLECTION, update_moving_mean)
+    tf.compat.v1.add_to_collection(UPDATE_OPS_COLLECTION, update_moving_variance)
+    is_training = tf.convert_to_tensor(value=trainable, dtype='bool', name='is_training')
     mean, variance = control_flow_ops.cond(is_training,
         lambda: (mean, variance),
         lambda: (moving_mean, moving_variance))
@@ -123,18 +123,18 @@ def batch_normalization(input, trainable, name, **kwargs):
     return tf.nn.batch_normalization(input, mean, variance, offset, scale, name=name, **kwargs)
 
 def convolution(input, group, shape, trainable, name, **kwargs):
-    w = tf.get_variable(initializer=tf.truncated_normal(shape, stddev=0.1), trainable=trainable, name=name + "_weight")
+    w = tf.compat.v1.get_variable(initializer=tf.random.truncated_normal(shape, stddev=0.1), trainable=trainable, name=name + "_weight")
     if group == 1:
-        layer = tf.nn.convolution(input, pruning.apply_mask(w, name + "_weight"), **kwargs)
+        layer = tf.nn.convolution(input=input, filters=pruning.apply_mask(w, name + "_weight"), **kwargs)
     else:
         weight_groups = tf.split(w, num_or_size_splits=group, axis=-1)
         xs = tf.split(input, num_or_size_splits=group, axis=-1)
-        convolved = [tf.nn.convolution(x, pruning.apply_mask(weight, name + "_weight_groups"), **kwargs) for
+        convolved = [tf.nn.convolution(input=x, filters=pruning.apply_mask(weight, name + "_weight_groups"), **kwargs) for
                      (x, weight) in zip(xs, weight_groups)]
         layer = tf.concat(convolved, axis=-1)
 
     if name.endswith('_sc'):
-        b = tf.get_variable(initializer=tf.truncated_normal(input.get_shape().as_list()[-1::], stddev=0.1), trainable=trainable, name=name + "_bias")
+        b = tf.compat.v1.get_variable(initializer=tf.random.truncated_normal(input.get_shape().as_list()[-1::], stddev=0.1), trainable=trainable, name=name + "_bias")
         layer = layer + b
     return layer
 
@@ -164,8 +164,8 @@ def resnet(inputs, w_init, units, num_stages, filter_list, trainable, reuse=Fals
     inputs = inputs - 127.5
     inputs = inputs * 0.0078125
 
-    with tf.variable_scope(variable_scope, reuse=reuse):
-        net = tf.pad(inputs, paddings=[[0, 0], [1, 1], [1, 1], [0, 0]])
+    with tf.compat.v1.variable_scope(variable_scope, reuse=reuse):
+        net = tf.pad(tensor=inputs, paddings=[[0, 0], [1, 1], [1, 1], [0, 0]])
         net = convolution(net, group=1, strides=[1, 1], shape=[3, 3, 3, 64], padding='VALID', trainable=trainable, name='conv0')
         net = batch_normalization(net, variance_epsilon=2e-5, trainable=trainable, name='bn0')
         net = prelu(net, trainable=trainable, name='relu0')
@@ -179,7 +179,7 @@ def resnet(inputs, w_init, units, num_stages, filter_list, trainable, reuse=Fals
         bn1 = batch_normalization(body, variance_epsilon=2e-5, trainable=trainable, name='bn1')
         bn1_shape = bn1.get_shape().as_list()
         bn1 = tf.reshape(bn1, shape=[-1, bn1_shape[1] * bn1_shape[2] * bn1_shape[3]], name='E_Reshapelayer')
-        pre_fc1 = tf.layers.dense(bn1, units=512, kernel_initializer=w_init, use_bias=True)
+        pre_fc1 = tf.compat.v1.layers.dense(bn1, units=512, kernel_initializer=w_init, use_bias=True)
         fc1 = batch_normalization(pre_fc1, variance_epsilon=2e-5, trainable=trainable, name='fc1')
 
     return fc1, pre_fc1
@@ -237,15 +237,15 @@ if __name__ == '__main__':
     args = parser.parse_args(sys.argv[1:])
 
     with tf.Graph().as_default():
-        with tf.Session() as sess:
-            input = tf.placeholder(dtype=tf.float32, shape=[None, 112, 112, 3], name='input')
-            trainable_placeholder = tf.placeholder_with_default(tf.constant(False, dtype=tf.bool), shape=None, name='trainable')
-            w_init_method = tf.contrib.layers.xavier_initializer(uniform=False)
+        with tf.compat.v1.Session() as sess:
+            input = tf.compat.v1.placeholder(dtype=tf.float32, shape=[None, 112, 112, 3], name='input')
+            trainable_placeholder = tf.compat.v1.placeholder_with_default(tf.constant(False, dtype=tf.bool), shape=None, name='trainable')
+            w_init_method = tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution=("uniform" if False else "truncated_normal"))
             prelogits = get_resnet(input, w_init=w_init_method, num_layers=50, trainable=trainable_placeholder)
 
             embeddings = tf.identity(prelogits, name='embeddings')
 
-            saver = tf.train.Saver(tf.trainable_variables(), max_to_keep=3)
+            saver = tf.compat.v1.train.Saver(tf.compat.v1.trainable_variables(), max_to_keep=3)
             print(args.pretrained_model)
             ckpt = tf.train.get_checkpoint_state(args.pretrained_model)
             print(ckpt)

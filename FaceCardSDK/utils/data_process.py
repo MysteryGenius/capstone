@@ -27,7 +27,7 @@ def mx2tfrecords(imgidx, imgrec, args):
     output_path = os.path.join(args.tfrecords_file_path, 'tran.tfrecords')
     if not os.path.exists(args.tfrecords_file_path):
         os.makedirs(args.tfrecords_file_path)
-    writer = tf.python_io.TFRecordWriter(output_path)
+    writer = tf.io.TFRecordWriter(output_path)
     random.shuffle(imgidx)
     for i, index in enumerate(imgidx):
         img_info = imgrec.read_idx(index)
@@ -48,9 +48,9 @@ def random_rotate_image(image):
     return misc.imrotate(image, angle, 'bicubic')
 
 def parse_function(example_proto):
-    features = {'image_raw': tf.FixedLenFeature([], tf.string),
-                'label': tf.FixedLenFeature([], tf.int64)}
-    features = tf.parse_single_example(example_proto, features)
+    features = {'image_raw': tf.io.FixedLenFeature([], tf.string),
+                'label': tf.io.FixedLenFeature([], tf.int64)}
+    features = tf.io.parse_single_example(serialized=example_proto, features=features)
     # You can do more image distortion here for training data
     img = tf.image.decode_jpeg(features['image_raw'])
     img = tf.reshape(img, shape=(112, 112, 3))
@@ -129,15 +129,15 @@ def load_data(db_name, image_size, args):
 def test_tfrecords():
     args = parse_args()
 
-    config = tf.ConfigProto(allow_soft_placement=True)
-    sess = tf.Session(config=config)
+    config = tf.compat.v1.ConfigProto(allow_soft_placement=True)
+    sess = tf.compat.v1.Session(config=config)
     # training datasets api config
     tfrecords_f = os.path.join(args.tfrecords_file_path, 'tran.tfrecords')
     dataset = tf.data.TFRecordDataset(tfrecords_f)
     dataset = dataset.map(parse_function)
     dataset = dataset.shuffle(buffer_size=20000)
     dataset = dataset.batch(32)
-    iterator = dataset.make_initializable_iterator()
+    iterator = tf.compat.v1.data.make_initializable_iterator(dataset)
     next_element = iterator.get_next()
     # begin iteration
     for i in range(1000):

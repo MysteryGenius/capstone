@@ -2,6 +2,7 @@ import cv2
 import time
 import numpy as np
 import sys
+import tensorflow as tf
 
 sys.path.append("../")
 from Detection.nms import py_nms
@@ -95,11 +96,8 @@ class MtcnnDetector(object):
         # stride = 4
         cellsize = 12
         # cellsize = 25
-        print("clasmap:", cls_map)
         # index of class_prob larger than threshold
         t_index = np.where(cls_map > threshold)
-        print(t_index)
-
         # find nothing
         if t_index[0].size == 0:
             return np.array([])
@@ -217,15 +215,14 @@ class MtcnnDetector(object):
             # cls_cls_map : H*w*2
             # reg: H*w*4
             # class_prob andd bbox_pred
+            #print(im.shape)
             cls_cls_map, reg = self.pnet_detector.predict(im_resized)
             # boxes: num*9(x1,y1,x2,y2,score,x1_offset,y1_offset,x2_offset,y2_offset)
-            print("Threshold: ",self.thresh)
             boxes = self.generate_bbox(cls_cls_map[:, :, 1], reg, current_scale, self.thresh[0])
             # scale_factor is 0.79 in default
             current_scale *= self.scale_factor
             im_resized = self.processed_image(im, current_scale)
             current_height, current_width, _ = im_resized.shape
-            print(boxes.size)
             if boxes.size == 0:
                 continue
             # get the index from non-maximum s
@@ -253,7 +250,6 @@ class MtcnnDetector(object):
                              all_boxes[:, 3] + all_boxes[:, 8] * bbh,
                              all_boxes[:, 4]])
         boxes_c = boxes_c.T
-
         return boxes, boxes_c, None
 
     def detect_rnet(self, im, dets):
@@ -280,6 +276,7 @@ class MtcnnDetector(object):
         [dy, edy, dx, edx, y, ey, x, ex, tmpw, tmph] = self.pad(dets, w, h)
         num_boxes = dets.shape[0]
         cropped_ims = np.zeros((num_boxes, 24, 24, 3), dtype=np.float32)
+        print("num boxes: ",num_boxes)
         for i in range(num_boxes):
             tmp = np.zeros((tmph[i], tmpw[i], 3), dtype=np.uint8)
             tmp[dy[i]:edy[i] + 1, dx[i]:edx[i] + 1, :] = im[y[i]:ey[i] + 1, x[i]:ex[i] + 1, :]
@@ -290,7 +287,9 @@ class MtcnnDetector(object):
         cls_scores, reg, _ = self.rnet_detector.predict(cropped_ims)
         cls_scores = cls_scores[:, 1]
         keep_inds = np.where(cls_scores > self.thresh[1])[0]
+
         if len(keep_inds) > 0:
+            print("Rnet scores: ",cls_scores)
             boxes = dets[keep_inds]
             boxes[:, 4] = cls_scores[keep_inds]
             reg = reg[keep_inds]
@@ -334,6 +333,7 @@ class MtcnnDetector(object):
         cls_scores, reg, landmark = self.onet_detector.predict(cropped_ims)
         # prob belongs to face
         cls_scores = cls_scores[:, 1]
+        print("ONet Score",cls_scores)
         keep_inds = np.where(cls_scores > self.thresh[2])[0]
         if len(keep_inds) > 0:
             # pickout filtered box
@@ -360,48 +360,46 @@ class MtcnnDetector(object):
 
     # use for video
     def detect(self, img):
-        print(img.shape)
-        """Detect face over image
-        """
-        boxes = None
-        t = time.time()
+        with tf.compat.v1.Graph().as_default():
+            with tf.compat.v1.Session() as sess:
+                #Detect face over image
+                
+                boxes = None
+                t = time.time()
 
-        # pnet
-        t1 = 0
-        if self.pnet_detector:
-            boxes, boxes_c, _ = self.detect_pnet(img)
-            print("Pnet Boxes: ", boxes.shape)
-            print("Pnet Boxes_c: ", boxes_c.shape)
-            if boxes_c is None:
-                return np.array([]), np.array([])
+                # pnet
+                t1 = 0
+                if self.pnet_detector:
+                    # Graph and session
+                    boxes, boxes_c, _ = self.detect_pnet(img)
+                    if boxes_c is None:
+                        return np.array([]), np.array([])
+                    t1 = time.time() - t
+                    t = time.time()
 
-            t1 = time.time() - t
-            t = time.time()
+                # rnet
+                t2 = 0
+                if self.rnet_detector:
 
-        # rnet
-        t2 = 0
-        if self.rnet_detector:
-            boxes, boxes_c, _ = self.detect_rnet(img, boxes_c)
-            print("Rnet Boxes: ", boxes.shape)
-            print("Rnet Boxes_c: ", boxes_c.shape)
-            if boxes_c is None:
-                return np.array([]), np.array([])
+                    boxes, boxes_c, _ = self.detect_rnet(img, boxes_c)
+                    if boxes_c is None:
+                        return np.array([]), np.array([])
 
-            t2 = time.time() - t
-            t = time.time()
+                    t2 = time.time() - t
+                    t = time.time()
 
-        # onet
-        t3 = 0
-        if self.onet_detector:
-            boxes, boxes_c, landmark = self.detect_onet(img, boxes_c)
-            if boxes_c is None:
-                return np.array([]), np.array([])
+                # onet
+                t3 = 0
+                if self.onet_detector:
+                    boxes, boxes_c, landmark = self.detect_onet(img, boxes_c)
+                    if boxes_c is None:
+                        return np.array([]), np.array([])
 
-            t3 = time.time() - t
-            t = time.time()
-            # print(
-            #    "time cost " + '{:.3f}'.format(t1 + t2 + t3) + '  pnet {:.3f}  rnet {:.3f}  onet {:.3f}'.format(t1, t2,
-            #                                                                                                  t3))
+                    t3 = time.time() - t
+                    t = time.time()
+                    # print(
+                    #    "time cost " + '{:.3f}'.format(t1 + t2 + t3) + '  pnet {:.3f}  rnet {:.3f}  onet {:.3f}'.format(t1, t2,
+                    #                                                                                                  t3))
 
         return boxes_c, landmark
 

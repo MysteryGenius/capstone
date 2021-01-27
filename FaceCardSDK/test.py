@@ -37,25 +37,28 @@ def get_test_image(mtcnn_detector):
     print(capture.isOpened())
     while capture.isOpened():
         ret, frame = capture.read()
-        cv.imshow("frame", frame)
-        if cv.waitKey(1) == ord('q'):
-            cv.imwrite('opencv.png', frame)
-            capture.release()
-            cv.destroyAllWindows()
-            with tf.compat.v1.Session() as sess:
-                sess.run(tf.compat.v1.global_variables_initializer())
-                faces, landmarks = mtcnn_detector.detect(frame)
-                if faces.shape[0] is not 0:
-                    input_images = np.zeros((faces.shape[0], 112,112,3))
-                    for i, face in enumerate(faces):
-                        if round(faces[i, 4], 6) > 0:
-                            bbox = faces[i,0:4]
-                            points = landmarks[i,:].reshape((5,2))
-                            return frame
-                return frame
+        with tf.compat.v1.Session() as sess:
+            sess.run(tf.compat.v1.global_variables_initializer())
+
+            faces, landmarks = mtcnn_detector.detect(frame)
+            cv.imshow("frame", frame)
+            print(faces.shape)
+            if faces.shape[0] is not 0:
+                input_images = np.zeros((faces.shape[0], 112,112,3))
+                for i, face in enumerate(faces):
+                    if round(faces[i, 4], 6) > 0:
+                        print("Rounding Faces: ", faces)
+                        bbox = faces[i,0:4]
+                        points = landmarks[i,:].reshape((5,2))
+                        return frame
+
+        if cv.waitKey(1) & 0xFF == ord('q'):
+            break
         elif not ret:
             print("error")
             break
+    capture.release()
+    cv.destroyAllWindows()
 
     return
 
@@ -131,20 +134,23 @@ def return_embeddings(image, mtcnn_detector):
             load_facecardmodel("./FaceCardSDK/models/facecardnet_model/facecardmodel.pb")
             inputs_placeholder = tf.compat.v1.get_default_graph().get_tensor_by_name("input:0")
             embeddings = tf.compat.v1.get_default_graph().get_tensor_by_name("embeddings:0")
-            image = cv.cvtColor(cv.imread("opencv.png"), cv.COLOR_BGR2RGB)
             faces, landmarks = mtcnn_detector.detect(image)
             print("faces: ",faces)
             print("The Landmarks: ",landmarks)
             # root = './face_db/'
             # input_image = cv2.imread(root + file)
             # for i in range(faces.shape[0]):
-            bbox = faces[0,:4]
-            points = landmarks[0, :].reshape((5, 2))
-            nimg = face_preprocess.preprocess(image, bbox, points, image_size='112,112')
-            cv.imshow("frame", nimg)
-            encoded_data = base64.b64encode(cv.imencode('.jpg', nimg)[1]).decode()
-            nimg = nimg - 127.5
-            nimg = nimg * 0.0078125
+            if not faces:
+                print("New Image Required")
+
+            else:
+                bbox = faces[0,:4]
+                points = landmarks[0, :].reshape((5, 2))
+                nimg = face_preprocess.preprocess(image, bbox, points, image_size='112,112')
+                cv.imshow("frame", nimg)
+                encoded_data = base64.b64encode(cv.imencode('.jpg', nimg)[1]).decode()
+                nimg = nimg - 127.5
+                nimg = nimg * 0.0078125
             # name = image.split(".")[0]
 
             input_image = np.expand_dims(nimg, axis=0)

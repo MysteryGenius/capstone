@@ -17,7 +17,7 @@ def _add_loss_summaries(total_loss, summaries):
     """
     # Compute the moving average of all individual losses and the total loss.
     loss_averages = tf.train.ExponentialMovingAverage(0.9, name='avg')
-    losses = tf.get_collection('losses')
+    losses = tf.compat.v1.get_collection('losses')
     loss_averages_op = loss_averages.apply(losses + [total_loss])
 
     # Attach a scalar summmary to all individual losses and the total loss; do the
@@ -25,8 +25,8 @@ def _add_loss_summaries(total_loss, summaries):
     for l in losses + [total_loss]:
         # Name each loss as '(raw)' and name the moving average version of the loss
         # as the original loss name.
-        summaries.append(tf.summary.scalar(l.op.name + ' (raw)', l))
-        summaries.append(tf.summary.scalar(l.op.name, loss_averages.average(l)))
+        summaries.append(tf.compat.v1.summary.scalar(l.op.name + ' (raw)', l))
+        summaries.append(tf.compat.v1.summary.scalar(l.op.name, loss_averages.average(l)))
 
     return loss_averages_op
 
@@ -39,15 +39,15 @@ def train(total_loss, global_step, optimizer, learning_rate, moving_average_deca
     # Compute gradients.
     with tf.control_dependencies([loss_averages_op]):
         if optimizer == 'ADAGRAD':
-            opt = tf.train.AdagradOptimizer(learning_rate)
+            opt = tf.compat.v1.train.AdagradOptimizer(learning_rate)
         elif optimizer == 'ADADELTA':
-            opt = tf.train.AdadeltaOptimizer(learning_rate, rho=0.9, epsilon=1e-6)
+            opt = tf.compat.v1.train.AdadeltaOptimizer(learning_rate, rho=0.9, epsilon=1e-6)
         elif optimizer == 'ADAM':
-            opt = tf.train.AdamOptimizer(learning_rate, beta1=0.9, beta2=0.999, epsilon=0.1)
+            opt = tf.compat.v1.train.AdamOptimizer(learning_rate, beta1=0.9, beta2=0.999, epsilon=0.1)
         elif optimizer == 'RMSPROP':
-            opt = tf.train.RMSPropOptimizer(learning_rate, decay=0.9, momentum=0.9, epsilon=1.0)
+            opt = tf.compat.v1.train.RMSPropOptimizer(learning_rate, decay=0.9, momentum=0.9, epsilon=1.0)
         elif optimizer == 'MOM':
-            opt = tf.train.MomentumOptimizer(learning_rate, 0.9, use_nesterov=True)
+            opt = tf.compat.v1.train.MomentumOptimizer(learning_rate, 0.9, use_nesterov=True)
         else:
             raise ValueError('Invalid optimization algorithm')
 
@@ -58,21 +58,21 @@ def train(total_loss, global_step, optimizer, learning_rate, moving_average_deca
 
     # Add histograms for trainable variables.
     if log_histograms:
-        for var in tf.trainable_variables():
-            summaries.append(tf.summary.histogram(var.op.name, var))
+        for var in tf.compat.v1.trainable_variables():
+            summaries.append(tf.compat.v1.summary.histogram(var.op.name, var))
 
     # Add histograms for gradients.
     if log_histograms:
         for grad, var in grads:
             if grad is not None:
-                summaries.append(tf.summary.histogram(var.op.name + '/gradients', grad))
+                summaries.append(tf.compat.v1.summary.histogram(var.op.name + '/gradients', grad))
 
     # Track the moving averages of all trainable variables.
     variable_averages = tf.train.ExponentialMovingAverage(
         moving_average_decay, global_step)
-    variables_averages_op = variable_averages.apply(tf.trainable_variables())
+    variables_averages_op = variable_averages.apply(tf.compat.v1.trainable_variables())
 
-    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    update_ops = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.UPDATE_OPS)
 
     with tf.control_dependencies([apply_gradient_op, variables_averages_op] + update_ops):
         train_op = tf.no_op(name='train')

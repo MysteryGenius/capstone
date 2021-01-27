@@ -41,9 +41,9 @@ class FcnDetector(object):
             # assert readstate, "the params dictionary is not valid"
             # print("restore models' param")
             # saver.restore(self.sess, "/home/user1/Desktop/FacecardSDK/facecard" + model_path)
+            # saver.restore(self.sess, "./FacecardSDK/facecard" + model_path)
 
     def predict(self, databatch):
-        print("databatch: ",databatch.shape)
         height, width, _ = databatch.shape
         cls_prob, bbox_pred = self.sess.run([self.cls_prob, self.bbox_pred],
                                                            feed_dict={self.image_op: databatch, self.width_op: width,
