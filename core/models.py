@@ -1,6 +1,7 @@
 from core import app, db, ma
+import random
 from sqlalchemy import Column, Integer, String, Float, BigInteger
-
+from sqlalchemy.orm import sessionmaker, relationship
 from werkzeug.security import generate_password_hash, check_password_hash
 
 class User(db.Model):

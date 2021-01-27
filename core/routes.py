@@ -7,13 +7,14 @@ from flask_cors import CORS, cross_origin
 import os
 from os.path import join, dirname, realpath
 from twilio.rest import Client
+import numpy as np
 
 account_sid = 'AC13cbd0428b9f0dd27bda86f23863f9b1'
 auth_token = 'de6787d9a7ff90c3b8ead763b44e676e'
 client = Client(account_sid, auth_token)
 
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'jpg'}
 
 from core.models import *
 
@@ -29,28 +30,6 @@ def validate_image(stream):
         return None
     return '.' + (format if format != 'jpeg' else 'jpg')
 
-@app.route('/user/image/upload', methods=['POST'])
-def upload_file():
-    if request.method == 'POST':
-        if request.is_json:
-            id = request.json['id']
-        else:
-            id = request.form['id']
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            return 'No file part'
-        file = request.files['file']
-        if file.filename == '':
-            return 'No selected file'
-        if file and allowed_file(file.filename) or file_ext != validate_image(uploaded_file.stream):
-            filename = secure_filename(file.filename)
-            basedir = os.path.abspath(os.path.dirname(__file__))
-            file.save(os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename))
-            user = User.query.filter_by(id=id).first()
-            user.photo = filename
-            db.session.commit()
-            return jsonify('success!'), 204
-        return "Invalid image", 400
 
 @app.route('/')
 @cross_origin()
@@ -90,6 +69,31 @@ def get_user(user_id):
         user = User.query.filter_by(id=user_id).delete()
         db.session.commit()
         return 200
+
+# Enrollment and Profile Pic Setup
+@app.route('/user/enroll', methods=['POST'])
+def upload_file():
+    if request.method == 'POST':
+        if request.is_json:
+            id = request.json['id']
+        else:
+            id = request.form['id']
+        # check if the post request has the file part
+        if 'image' not in request.files:
+            return 'No file part'
+        file = request.files['image']
+        if file.filename == '':
+            return 'No selected file'
+        if file and allowed_file(file.filename) or file_ext != validate_image(uploaded_file.stream):
+            filename = secure_filename(file.filename)
+            basedir = os.path.abspath(os.path.dirname(__file__))
+            file.save(os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename))
+            user = User.query.filter_by(id=id).first()
+            user.photo = filename
+            db.session.commit()
+            return jsonify('success!'), 204
+        return "Invalid image", 400
+
 
 # Create a single user
 
