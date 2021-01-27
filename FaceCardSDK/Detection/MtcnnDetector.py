@@ -200,6 +200,7 @@ class MtcnnDetector(object):
         boxes_c: numpy array
             boxes after calibration
         """
+        print("im shape",im.shape)
         h, w, c = im.shape
         net_size = 12
 
@@ -365,38 +366,26 @@ class MtcnnDetector(object):
                 #Detect face over image
                 
                 boxes = None
-                t = time.time()
 
                 # pnet
-                t1 = 0
                 if self.pnet_detector:
                     # Graph and session
                     boxes, boxes_c, _ = self.detect_pnet(img)
                     if boxes_c is None:
                         return np.array([]), np.array([])
-                    t1 = time.time() - t
-                    t = time.time()
 
                 # rnet
-                t2 = 0
                 if self.rnet_detector:
-
                     boxes, boxes_c, _ = self.detect_rnet(img, boxes_c)
                     if boxes_c is None:
                         return np.array([]), np.array([])
 
-                    t2 = time.time() - t
-                    t = time.time()
-
                 # onet
-                t3 = 0
                 if self.onet_detector:
                     boxes, boxes_c, landmark = self.detect_onet(img, boxes_c)
                     if boxes_c is None:
                         return np.array([]), np.array([])
 
-                    t3 = time.time() - t
-                    t = time.time()
                     # print(
                     #    "time cost " + '{:.3f}'.format(t1 + t2 + t3) + '  pnet {:.3f}  rnet {:.3f}  onet {:.3f}'.format(t1, t2,
                     #                                                                                                  t3))
