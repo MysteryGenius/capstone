@@ -19,7 +19,7 @@ class User(db.Model):
 	residence_code = Column(String)
 	phone_area_code = Column(String)
 	password = Column(String)						# bcrypt hashed
-	email = Column(String, unique=True)
+	email = Column(String)
 	status = Column(String, default="active")						# Enum (active, disabled)
 
 	enrolled_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), nullable=True)
