@@ -23,7 +23,7 @@ class User(db.Model):
 	status = Column(String, default="active")						# Enum (active, disabled)
 
 	enrolled_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), nullable=True)
-	organisation_id = db.Column(db.Integer, db.ForeignKey('organisations.id', ondelete="CASCADE"), nullable=True)
+	organisation_id = db.Column(db.Integer, db.ForeignKey('organisations.id'), nullable=True)
 
 	created_on = db.Column(db.DateTime, server_default=db.func.now())
 	updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
