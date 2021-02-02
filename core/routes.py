@@ -357,7 +357,8 @@ def login():
     if test is None or not test.check_password(password):
         return jsonify(message="Bad email or password"), 401
     else:
-        access_token = create_access_token(identity=email)
+        expires = datetime.timedelta(days=1)
+        access_token = create_access_token(identity=email, expires_delta=expires)
         commit_new_session = UsageHistory(user_id=test.id)
         db.session.add(commit_new_session)
         db.session.commit()
