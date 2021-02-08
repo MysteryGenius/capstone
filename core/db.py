@@ -54,14 +54,14 @@ def db_seed():
     test_org_1 = Organization(
         name='Cumpani',
         slug='Cump',
-        sttaus='live',
+        status='live',
         contact='1563545',
         email='jabier@cumpani.wtf')
 
-    test_org_1 = Organization(
+    test_org_2 = Organization(
         name='Floridaman',
         slug='Flor',
-        sttaus='live',
+        status='live',
         contact='1563545',
         email='Sam@floridaman.wtf')
 

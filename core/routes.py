@@ -9,6 +9,8 @@ from os.path import join, dirname, realpath
 from twilio.rest import Client
 import numpy as np
 
+import datetime
+
 import FaceCardSDK.test as faceCard
 
 account_sid = 'AC13cbd0428b9f0dd27bda86f23863f9b1'
@@ -123,6 +125,7 @@ def new_user():
         phone_area_code = request.json['phone_area_code']
         enrolled_id = request.json['enrolled_id']
         organisation_id = request.json['organisation_id']
+        country = request.json['country']
     else:
         email = request.form['email']
         first_name = request.form['first_name']
@@ -136,11 +139,12 @@ def new_user():
         phone_area_code = request.form['phone_area_code']
         enrolled_id = request.form['enrolled_id']
         organisation_id = request.form['organisation_id']
+        country = request.form['country']
 
     commit_new_user = User(
         email=email, first_name=first_name, last_name=last_name, username=username, document_type=document_type, 
-        pid=pid, mobile_number=mobile_number, photo=photo, residence_code=residence_code, phone_area_code=phone_area_code, 
-        enrolled_id=enrolled_id, organisation_id=organisation_id, role=role
+        pid=pid, mobile_number=mobile_number, residence_code=residence_code, phone_area_code=phone_area_code, 
+        enrolled_id=enrolled_id, organisation_id=organisation_id, role=role, country=country
     )
     db.session.add(commit_new_user)
     db.session.commit()
@@ -214,13 +218,17 @@ def new_organization():
     if request.is_json:
         name = request.json['name']
         slug = request.json['slug']
+        contact = request.json['contact']
+        email = request.json['email']
         created_by = request.json['created_by']
     else:
         name = request.form['name']
         slug = request.form['slug']
+        contact = request.form['contact']
+        email = request.form['email']
         created_by = request.form['created_by']
 
-    commit_new_organization = Organization(name=name, slug=slug, created_by=created_by)
+    commit_new_organization = Organization(name=name, slug=slug, created_by=created_by, contact=contact, email=email)
     db.session.add(commit_new_organization)
     db.session.commit()
     return jsonify(message="Organization created!"), 200
@@ -301,8 +309,8 @@ def sms_verify():
 @app.route('/session/<user_id>')
 @cross_origin()
 def userSessions():
-    session = UsageHistory.query.filter_by(user_id=user_id).all()
-    result = usageHistory_schema.dump(session)
+    sessions = UsageHistory.query.filter_by(user_id=user_id).all()
+    result = usageHistories_schema.dump(sessions)
     return jsonify(result)
 
 @app.route('/session/all')
