@@ -13,8 +13,8 @@ import datetime
 
 import FaceCardSDK.test as faceCard
 
-account_sid = 'AC13cbd0428b9f0dd27bda86f23863f9b1'
-auth_token = 'de6787d9a7ff90c3b8ead763b44e676e'
+# account_sid = 'AC13cbd0428b9f0dd27bda86f23863f9b1'
+# auth_token = '984e56e14ef7b3ca60094aa5989cddbe'
 client = Client(account_sid, auth_token)
 
 
@@ -58,6 +58,21 @@ def users():
 def users_users():
     users = User.query.filter_by(role='user').all()
     result = users_schema.dump(users)
+    return jsonify(result)
+
+
+@app.route('/users/all/admins')
+@cross_origin()
+def users_admins():
+    admin = User.query.filter_by(role='admin').all()
+    result = users_schema.dump(admin)
+    return jsonify(result)
+
+@app.route('/users/all/operators')
+@cross_origin()
+def users_operators():
+    operators = User.query.filter_by(role='operator').all()
+    result = users_schema.dump(operators)
     return jsonify(result)
 
 # Get a single user or delete user using user_id    
@@ -144,7 +159,7 @@ def new_user():
     commit_new_user = User(
         email=email, first_name=first_name, last_name=last_name, username=username, document_type=document_type, 
         pid=pid, mobile_number=mobile_number, residence_code=residence_code, phone_area_code=phone_area_code, 
-        enrolled_id=enrolled_id, organisation_id=organisation_id, role=role, country=country
+        enrolled_id=enrolled_id, organisation_id=organisation_id, role=role, country=country, status="live"
     )
     db.session.add(commit_new_user)
     db.session.commit()
@@ -152,6 +167,41 @@ def new_user():
     user = User.query.filter_by(email=email).first()
     user.set_password('password')
     db.session.commit()
+    result = users_schema.dump(users)
+    return jsonify(result), 201
+
+@app.route('/user/update',  methods=['POST'])
+@cross_origin()
+def user_update():
+    if request.is_json:
+        id = request.json['id']
+        status = request.json['status']
+        username = request.json['username']
+        document_type = request.json['document_type']
+        pid = request.json['pid']
+        residence_code = request.json['residence_code']
+        phone_area_code = request.json['phone_area_code']
+        email = request.json['email']
+    else:
+        id = request.form['id']
+        status = request.form['status']
+        username = request.form['username']
+        document_type = request.form['document_type']
+        pid = request.form['pid']
+        residence_code = request.form['residence_code']
+        phone_area_code = request.form['phone_area_code']
+        email = request.form['email']
+
+    user = User.query.filter_by(id=id).first()
+    user.status = status
+    user.username = username
+    user.document_type = document_type
+    user.pid = pid
+    user.residence_code = residence_code
+    user.phone_area_code = phone_area_code
+    user.email = email
+    db.session.commit()
+    user = User.query.filter_by(id=id).first()
     result = users_schema.dump(users)
     return jsonify(result), 201
 
@@ -186,7 +236,7 @@ def new_user_password():
     user.set_password(password)
     db.session.commit()
     user = User.query.filter_by(id=id).first()
-    result = users_schema.dump(users)
+    result = user_schema.dump(user)
     return jsonify(result), 201
     
 ##### Organization #####
@@ -308,7 +358,7 @@ def sms_verify():
 
 @app.route('/session/<user_id>')
 @cross_origin()
-def userSessions():
+def userSessions(user_id):
     sessions = UsageHistory.query.filter_by(user_id=user_id).all()
     result = usageHistories_schema.dump(sessions)
     return jsonify(result)
@@ -367,10 +417,10 @@ def login():
     else:
         expires = datetime.timedelta(days=1)
         access_token = create_access_token(identity=email, expires_delta=expires)
-        commit_new_session = UsageHistory(user_id=test.id)
+        commit_new_session = UsageHistory(user_id=test.id, username=test.username, email=test.email)
         db.session.add(commit_new_session)
         db.session.commit()
-        return jsonify(message="Login succeeded!", access_token=access_token) 
+        return jsonify(message="Login succeeded!", access_token=access_token, number=test.mobile_number) 
 
 @app.route('/face', methods=['POST'])
 @cross_origin()
@@ -397,3 +447,14 @@ def check():
     current_user = get_jwt_identity()
     curr_user = User.query.filter_by(email=current_user).first()
     return jsonify(user=curr_user.id), 200
+
+@app.route('/renew', methods=['POST'])
+@jwt_required
+def renew():
+    if request.is_json:
+        email = request.json['email']
+    else:
+        email = request.form['email']
+    access_token = create_access_token(identity=email)
+    return jsonify(access_token=access_token), 200
+

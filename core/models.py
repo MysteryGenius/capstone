@@ -45,6 +45,8 @@ users_schema = UserSchema(many=True)
 class Session(db.Model):
 	__tablename__ = 'sessions'
 	id = Column(Integer, primary_key=True)
+	username = Column(String)
+	email = Column(String)
 	user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
 	jwt = Column(String, default='unassigned')
 
@@ -53,7 +55,7 @@ class Session(db.Model):
 
 class SessionSchema(ma.Schema):
 	class Meta:
-		fields = ('id', 'user_id', 'jwt')
+		fields = ('id', 'user_id', 'jwt', 'username', 'jwt')
 
 session_schema = SessionSchema()
 sessions_schema = SessionSchema(many=True)
@@ -80,13 +82,15 @@ class UsageHistory(db.Model):
 	user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
 	geocode = Column(String)
 	history = Column(String)
+	username = Column(String)
+	email = Column(String)
 
 	created_on = db.Column(db.DateTime, server_default=db.func.now())
 	updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
 
 class UsageHistorySchema(ma.Schema):
 	class Meta:
-		fields = ('id', 'user_id', 'geocode', 'history')
+		fields = ('id', 'user_id', 'geocode', 'history', 'username', 'email')
 
 usageHistory_schema = UsageHistorySchema()
 usageHistories_schema = UsageHistorySchema(many=True)
