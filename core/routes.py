@@ -414,6 +414,8 @@ def login():
 
     if test is None or not test.check_password(password):
         return jsonify(message="Bad email or password"), 401
+    if test.role = 'user':
+        return jsonify(message="Unauthorized SUCK MY DICK"), 469
     else:
         expires = datetime.timedelta(days=1)
         access_token = create_access_token(identity=email, expires_delta=expires)
