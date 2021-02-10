@@ -138,10 +138,12 @@ def check_face_vector():
         basedir = os.path.abspath(os.path.dirname(__file__))
         fileAbsDir = os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename)
         file.save(fileAbsDir)
+        return faceCard.match_user(fileAbsDir, faceFeature.face_vector)
         try: 
-            return faceCard.match_user(fileAbsDir, faceFeature.frame)
+            return faceCard.match_user(fileAbsDir, faceFeature.face_vector)
         except:
-            return jsonify(message="Image Errors"), 400
+            result = facialFeature_schema.dump(faceFeature)
+            return jsonify(message="Image Errors", vec=result), 400
 
 
 
