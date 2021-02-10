@@ -2,7 +2,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import sys, hashlib, calendar, base64, os, shutil, io, argparse, time
 import math, sys, queue, threading, platform, subprocess, requests
 import numpy as np
 from cv2 import cv2 as cv
@@ -167,7 +166,7 @@ def match_user(image, savedImage):
         embedding = obtain_enrol_embedding(image)
         return True if embedding == savedImage else False
     except e:
-        print "Unexpected error:", sys.exc_info()[0]
+        print ("Unexpected error:", sys.exc_info()[0])
         raise
 
 def test(mtcnn_detector):
