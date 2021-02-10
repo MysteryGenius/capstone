@@ -129,7 +129,6 @@ def return_embeddings(image, mtcnn_detector):
 
             if len(faces) == 0:
                 print("New Image Required")
-                # Add loop
 
             else:
                 bbox = faces[0,:4]
@@ -164,8 +163,12 @@ def obtain_enrol_embedding_from_filepath(path):
 
 # match
 def match_user(image, savedImage):
-    embedding = obtain_enrol_embedding(image)
-    return True if embedding == savedImage else False
+    try:
+        embedding = obtain_enrol_embedding(image)
+        return True if embedding == savedImage else False
+    except e:
+        print "Unexpected error:", sys.exc_info()[0]
+        raise
 
 def test(mtcnn_detector):
     image = get_test_image(mtcnn_detector)
