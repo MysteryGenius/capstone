@@ -34,7 +34,6 @@ def validate_image(stream):
         return None
     return '.' + (format if format != 'jpeg' else 'jpg')
 
-
 @app.route('/')
 @cross_origin()
 def index():
@@ -120,6 +119,31 @@ def upload_file():
             db.session.commit()
             return jsonify(message="Success"), 200
         return "Invalid image", 400
+
+@app.route('/users/check',  methods=['POST'])
+@cross_origin()
+def check_face_vector():
+    if request.is_json:
+        id = request.json['id']
+    else:
+        id = request.form['id']
+    if 'image' not in request.files:
+        return 'No file part'
+    file = request.files['image']
+    faceFeature = FacialFeature.query.filter_by(user_id=id).first()
+    if file.filename == '':
+        return 'No selected file'
+    if file and allowed_file(file.filename) or file_ext != validate_image(uploaded_file.stream):
+        filename = secure_filename(file.filename)
+        basedir = os.path.abspath(os.path.dirname(__file__))
+        fileAbsDir = os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename)
+        file.save(fileAbsDir)
+        try: 
+            return faceCard.match_user(fileAbsDir, faceFeature.frame)
+        except:
+            return jsonify(message="Image Errors"), 400
+
+
 
 
 # Create a single user
