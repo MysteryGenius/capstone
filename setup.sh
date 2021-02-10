@@ -1,3 +1,4 @@
+cd ..
 sudo cp -a ./capstone/* ./
 sudo rm -r ./capstone/
 cd ./core/
