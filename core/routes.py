@@ -14,7 +14,7 @@ import datetime
 import FaceCardSDK.test as faceCard
 
 # account_sid = 'AC13cbd0428b9f0dd27bda86f23863f9b1'
-# auth_token = '984e56e14ef7b3ca60094aa5989cddbe'
+# auth_token = '5dbca916f466a9942815b6a9d9c3233a'
 client = Client(account_sid, auth_token)
 
 
