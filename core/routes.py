@@ -450,6 +450,27 @@ def login():
         db.session.commit()
         return jsonify(message="Login succeeded!", access_token=access_token, number=test.mobile_number) 
 
+@app.route('/login/users', methods=['POST'])
+def login():
+    if request.is_json:
+        email = request.json['email']
+        password = request.json['password']
+    else:
+        email = request.form['email']
+        password = request.form['password']
+
+    test = User.query.filter_by(email=email).first()
+
+    if test is None or not test.check_password(password):
+        return jsonify(message="Bad email or password"), 401
+    else:
+        expires = datetime.timedelta(days=1)
+        access_token = create_access_token(identity=email, expires_delta=expires)
+        commit_new_session = UsageHistory(user_id=test.id, username=test.username, email=test.email)
+        db.session.add(commit_new_session)
+        db.session.commit()
+        return jsonify(message="Login succeeded!", access_token=access_token, number=test.mobile_number) 
+
 @app.route('/face', methods=['POST'])
 @cross_origin()
 def face():
@@ -474,7 +495,8 @@ def check():
     # Access the identity of the current user with get_jwt_identity
     current_user = get_jwt_identity()
     curr_user = User.query.filter_by(email=current_user).first()
-    return jsonify(user=curr_user.id), 200
+    if(curr_user != None):
+        return jsonify(user=curr_user.id), 200
 
 @app.route('/renew', methods=['POST'])
 @jwt_required
