@@ -448,6 +448,8 @@ def login():
         expires = datetime.timedelta(days=1)
         access_token = create_access_token(identity=email, expires_delta=expires)
         commit_new_session = UsageHistory(user_id=test.id, username=test.username, email=test.email, geocode=geocode)
+        if(commit_new_session.geocode == None):
+            commit_new_session.geocode = 'web'
         db.session.add(commit_new_session)
         db.session.commit()
         return jsonify(message="Login succeeded!", access_token=access_token, number=test.mobile_number) 
@@ -471,6 +473,8 @@ def login_user():
         expires = datetime.timedelta(days=1)
         access_token = create_access_token(identity=email, expires_delta=expires)
         commit_new_session = UsageHistory(user_id=test.id, username=test.username, email=test.email, geocode=geocode)
+        if(commit_new_session.geocode == None):
+            commit_new_session.geocode = 'web'
         db.session.add(commit_new_session)
         db.session.commit()
         return jsonify(message="Login succeeded!", access_token=access_token, number=test.mobile_number) 
