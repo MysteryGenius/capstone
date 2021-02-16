@@ -304,7 +304,7 @@ def new_organization():
         email = request.form['email']
         created_by = request.form['created_by']
 
-    commit_new_organization = Organization(name=name, slug=slug, created_by=created_by, contact=contact, email=email)
+    commit_new_organization = Organization(name=name, slug=slug, created_by=created_by, contact=contact, email=email, status="live")
     db.session.add(commit_new_organization)
     db.session.commit()
     return jsonify(message="Organization created!"), 200
@@ -432,9 +432,11 @@ def login():
     if request.is_json:
         email = request.json['email']
         password = request.json['password']
+        geocode = request.json['geocode']
     else:
         email = request.form['email']
         password = request.form['password']
+        geocode = request.form['geocode']
 
     test = User.query.filter_by(email=email).first()
 
@@ -445,7 +447,7 @@ def login():
     else:
         expires = datetime.timedelta(days=1)
         access_token = create_access_token(identity=email, expires_delta=expires)
-        commit_new_session = UsageHistory(user_id=test.id, username=test.username, email=test.email)
+        commit_new_session = UsageHistory(user_id=test.id, username=test.username, email=test.email, geocode=geocode)
         db.session.add(commit_new_session)
         db.session.commit()
         return jsonify(message="Login succeeded!", access_token=access_token, number=test.mobile_number) 
@@ -455,9 +457,11 @@ def login_user():
     if request.is_json:
         email = request.json['email']
         password = request.json['password']
+        geocode = request.json['geocode']
     else:
         email = request.form['email']
         password = request.form['password']
+        geocode = request.form['geocode']
 
     test = User.query.filter_by(email=email).first()
 
@@ -466,7 +470,7 @@ def login_user():
     else:
         expires = datetime.timedelta(days=1)
         access_token = create_access_token(identity=email, expires_delta=expires)
-        commit_new_session = UsageHistory(user_id=test.id, username=test.username, email=test.email)
+        commit_new_session = UsageHistory(user_id=test.id, username=test.username, email=test.email, geocode=geocode)
         db.session.add(commit_new_session)
         db.session.commit()
         return jsonify(message="Login succeeded!", access_token=access_token, number=test.mobile_number) 

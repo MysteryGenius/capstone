@@ -90,7 +90,7 @@ class UsageHistory(db.Model):
 
 class UsageHistorySchema(ma.Schema):
 	class Meta:
-		fields = ('id', 'user_id', 'geocode', 'history', 'username', 'email')
+		fields = ('id', 'user_id', 'geocode', 'history', 'username', 'email', 'created_on')
 
 usageHistory_schema = UsageHistorySchema()
 usageHistories_schema = UsageHistorySchema(many=True)
