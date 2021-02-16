@@ -451,7 +451,7 @@ def login():
         return jsonify(message="Login succeeded!", access_token=access_token, number=test.mobile_number) 
 
 @app.route('/login/users', methods=['POST'])
-def login():
+def login_user():
     if request.is_json:
         email = request.json['email']
         password = request.json['password']
