@@ -447,7 +447,7 @@ def login():
     else:
         expires = datetime.timedelta(days=1)
         access_token = create_access_token(identity=email, expires_delta=expires)
-        commit_new_session = UsageHistory(user_id=test.id, username=test.username, email=test.email, geocode=geocode)
+        commit_new_session = UsageHistory(user_id=test.id, username=test.username, email=test.email, geocode="web")
         if(commit_new_session.geocode == None):
             commit_new_session.geocode = 'web'
         db.session.add(commit_new_session)
@@ -472,7 +472,7 @@ def login_user():
     else:
         expires = datetime.timedelta(days=1)
         access_token = create_access_token(identity=email, expires_delta=expires)
-        commit_new_session = UsageHistory(user_id=test.id, username=test.username, email=test.email, geocode=geocode)
+        commit_new_session = UsageHistory(user_id=test.id, username=test.username, email=test.email, geocode="web")
         if(commit_new_session.geocode == None):
             commit_new_session.geocode = 'web'
         db.session.add(commit_new_session)
