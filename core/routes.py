@@ -8,6 +8,7 @@ import os
 from os.path import join, dirname, realpath
 from twilio.rest import Client
 import numpy as np
+from sqlalchemy import desc
 
 import datetime
 
@@ -392,7 +393,7 @@ def userSessions(user_id):
 @app.route('/session/all')
 @cross_origin()
 def userAllSessions():
-    sessions = UsageHistory.query.all()
+    sessions = UsageHistory.query.order_by(desc(UsageHistory.created_on)).all()
     result = usageHistories_schema.dump(sessions)
     return jsonify(result)
 
@@ -400,7 +401,7 @@ def userAllSessions():
 @cross_origin()
 def userUsersSessions():
     users = [value for value, in db.session.query(User.id).filter_by(role='user').all()]
-    sessions = db.session.query(UsageHistory).filter(UsageHistory.user_id.in_(users)).all()
+    sessions = db.session.query(UsageHistory).order_by(desc(UsageHistory.created_on)).filter(UsageHistory.user_id.in_(users)).all()
     result = usageHistories_schema.dump(sessions)
     return jsonify(result)
 
@@ -408,7 +409,7 @@ def userUsersSessions():
 @cross_origin()
 def userOperatorsSessions():
     users = [value for value, in db.session.query(User.id).filter_by(role='operator').all()]
-    sessions = db.session.query(UsageHistory).filter(UsageHistory.user_id.in_(users)).all()
+    sessions = db.session.query(UsageHistory).order_by(desc(UsageHistory.created_on)).filter(UsageHistory.user_id.in_(users)).all()
     result = usageHistories_schema.dump(sessions)
     return jsonify(result)
 
@@ -416,7 +417,7 @@ def userOperatorsSessions():
 @cross_origin()
 def userAdminSessions():
     users = [value for value, in db.session.query(User.id).filter_by(role='admin').all()]
-    sessions = db.session.query(UsageHistory).filter(UsageHistory.user_id.in_(users)).all()
+    sessions = db.session.query(UsageHistory).order_by(desc(UsageHistory.created_on)).filter(UsageHistory.user_id.in_(users)).all()
     result = usageHistories_schema.dump(sessions)
     return jsonify(result)
 
@@ -447,7 +448,7 @@ def login():
     else:
         expires = datetime.timedelta(days=1)
         access_token = create_access_token(identity=email, expires_delta=expires)
-        commit_new_session = UsageHistory(user_id=test.id, username=test.username, email=test.email, geocode="web")
+        commit_new_session = UsageHistory(user_id=test.id, username=test.username, email=test.email, geocode=geocode)
         if(commit_new_session.geocode == None):
             commit_new_session.geocode = 'web'
         db.session.add(commit_new_session)
@@ -472,7 +473,7 @@ def login_user():
     else:
         expires = datetime.timedelta(days=1)
         access_token = create_access_token(identity=email, expires_delta=expires)
-        commit_new_session = UsageHistory(user_id=test.id, username=test.username, email=test.email, geocode="web")
+        commit_new_session = UsageHistory(user_id=test.id, username=test.username, email=test.email, geocode=geocode)
         if(commit_new_session.geocode == None):
             commit_new_session.geocode = 'web'
         db.session.add(commit_new_session)
@@ -505,6 +506,8 @@ def check():
     curr_user = User.query.filter_by(email=current_user).first()
     if(curr_user != None):
         return jsonify(user=curr_user.id), 200
+    else:
+        return jsonify('no user found'), 569
 
 @app.route('/renew', methods=['POST'])
 @jwt_required
