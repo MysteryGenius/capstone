@@ -75,6 +75,15 @@ def users_operators():
     result = users_schema.dump(operators)
     return jsonify(result)
 
+@app.route('/users/email/<email>',  methods=['GET', 'DELETE'])
+@cross_origin()
+def get_user_by_email(email):
+    if request.method == 'GET':
+        user = User.query.filter_by(email=email).first()
+        result = user_schema.dump(user)
+        return jsonify(result)
+
+
 # Get a single user or delete user using user_id    
 
 @app.route('/users/<user_id>',  methods=['GET', 'DELETE'])
@@ -194,7 +203,7 @@ def new_user():
     user = User.query.filter_by(email=email).first()
     user.set_password('password')
     db.session.commit()
-    result = users_schema.dump(users)
+    result = user_schema.dump(user)
     return jsonify(result), 201
 
 @app.route('/user/update',  methods=['POST'])
@@ -229,7 +238,7 @@ def user_update():
     user.email = email
     db.session.commit()
     user = User.query.filter_by(id=id).first()
-    result = users_schema.dump(users)
+    result = user_schema.dump(user)
     return jsonify(result), 201
 
 @app.route('/user/phone_area_code',  methods=['POST'])
