@@ -12,6 +12,8 @@ from threading import Timer, Thread, Event
 from skimage import io
 import tensorflow as tf
 import tensorboard as tb
+import face_recognition
+import json
 from utils import face_preprocess
 from nets.mtcnn_model import P_Net, R_Net, O_Net
 from Detection.MtcnnDetector import MtcnnDetector
@@ -35,6 +37,10 @@ VERIFICATION_THRESHOLD = float(conf.get("MOBILEFACENET", "VERIFICATION_THRESHOLD
 def get_test_image(mtcnn_detector):
     capture = cv.VideoCapture(0)
     print(capture.isOpened())
+    width = 480
+    height = 480
+    capture.set(cv.CAP_PROP_FRAME_WIDTH, width)
+    capture.set(cv.CAP_PROP_FRAME_HEIGHT, height)
     while capture.isOpened():
         ret, frame = capture.read()
         with tf.compat.v1.Session() as sess:
@@ -42,12 +48,11 @@ def get_test_image(mtcnn_detector):
 
             faces, landmarks = mtcnn_detector.detect(frame)
             cv.imshow("frame", frame)
-            print(faces.shape)
             if faces.shape[0] is not 0:
                 input_images = np.zeros((faces.shape[0], 112,112,3))
                 for i, face in enumerate(faces):
                     if round(faces[i, 4], 6) > 0:
-                        print("Rounding Faces: ", faces)
+                        # print("Rounding Faces: ", faces)
                         bbox = faces[i,0:4]
                         points = landmarks[i,:].reshape((5,2))
                         return frame
@@ -113,17 +118,17 @@ def load_facecardmodel(model):
     #  or if it is a protobuf file with a frozen graph
     model_exp = os.path.expanduser(model)
     if (os.path.isfile(model_exp)):
-        print('Model filename: %s' % model_exp)
+        # print('Model filename: %s' % model_exp)
         with tb.compat.tensorflow_stub.io.gfile.GFile(model_exp, 'rb') as f:
             graph_def = tf.compat.v1.GraphDef()
             graph_def.ParseFromString(f.read())
             tf.import_graph_def(graph_def, name='')
     else:
-        print('Model directory: %s' % model_exp)
+        # print('Model directory: %s' % model_exp)
         meta_file, ckpt_file = get_model_filenames(model_exp)
 
-        print('Metagraph file: %s' % meta_file)
-        print('Checkpoint file: %s' % ckpt_file)
+        # print('Metagraph file: %s' % meta_file)
+        # print('Checkpoint file: %s' % ckpt_file)
 
         saver = tf.compat.v1.train.import_meta_graph(os.path.join(model_exp, meta_file))
         saver.restore(tf.compat.v1.get_default_session(), os.path.join(model_exp, ckpt_file))
@@ -134,23 +139,23 @@ def return_embeddings(image, mtcnn_detector):
             load_facecardmodel("./FaceCardSDK/models/facecardnet_model/facecardmodel.pb")
             inputs_placeholder = tf.compat.v1.get_default_graph().get_tensor_by_name("input:0")
             embeddings = tf.compat.v1.get_default_graph().get_tensor_by_name("embeddings:0")
-            faces, landmarks = mtcnn_detector.detect(image)
-            print("faces: ",faces)
-            print("The Landmarks: ",landmarks)
+            faces = []
+            while True:
+                if len(faces) == 0:
+                    faces, landmarks = mtcnn_detector.detect(image)
+                else:
+                    # print("Faces: ", faces)
+                    # print("Landmarks: ", landmarks)
+                    break
             # root = './face_db/'
             # input_image = cv2.imread(root + file)
             # for i in range(faces.shape[0]):
-            if not faces:
-                print("New Image Required")
-
-            else:
-                bbox = faces[0,:4]
-                points = landmarks[0, :].reshape((5, 2))
-                nimg = face_preprocess.preprocess(image, bbox, points, image_size='112,112')
-                cv.imshow("frame", nimg)
-                encoded_data = base64.b64encode(cv.imencode('.jpg', nimg)[1]).decode()
-                nimg = nimg - 127.5
-                nimg = nimg * 0.0078125
+            bbox = faces[0,:4]
+            points = landmarks[0, :].reshape((5, 2))
+            nimg = face_preprocess.preprocess(image, bbox, points, image_size='112,112')
+            encoded_data = base64.b64encode(cv.imencode('.jpg', nimg)[1]).decode()
+            nimg = nimg - 127.5
+            nimg = nimg * 0.0078125
             # name = image.split(".")[0]
 
             input_image = np.expand_dims(nimg, axis=0)
@@ -166,20 +171,36 @@ def obtain_enrol_embedding(image):
     temp_embedding.append(embedding)
 
     # Convert to string for saving
-    embed = ""
-    for i in range(128):
-        embed += ", @F%s = %s" % (i, temp_embedding[0][i])
+    # embed = ""
+    # for i in range(128):
+    #     embed += ", @F%s = %s" % (i, temp_embedding[0][i])
     
-    return embed
+    return embedding
 
-def match_user(image, savedImage):
-    embedding = obtain_enrol_embedding(image)
-    return True if embedding == savedImage else False
+def match_user(image, embed):
+    matching_embedding = obtain_enrol_embedding(image)
+    np.savetxt('matching_embed.txt', matching_embedding)
+    match_embed = np.loadtxt('matching_embed.txt', dtype=float)
+    embed = np.loadtxt('embed.txt', dtype=float)
+    results = face_recognition.compare_faces(matching_embedding, embed)
+    if results[0] == True:
+        print("You are Logged In!")
+        return True
+    else:
+        print("Credentials Not Met!")
+        return False
 
 def test(mtcnn_detector):
     image = get_test_image(mtcnn_detector)
     embed = obtain_enrol_embedding(image)
-    print(embed)
+
+    # # Saving Embeddings
+    # np.savetxt('embed.txt', embed)
+    # print("Embedding Saved, Try Recognition")
+
+    # Matching Results Function
+    match_result = match_user(image, embed)
+
 
 if __name__ == "__main__":
     test(mtcnn_detector)
