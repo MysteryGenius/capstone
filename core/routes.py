@@ -202,6 +202,7 @@ def new_user():
 
     user = User.query.filter_by(email=email).first()
     user.set_password('password')
+    user.set_uid(email)
     db.session.commit()
     result = user_schema.dump(user)
     return jsonify(result), 201

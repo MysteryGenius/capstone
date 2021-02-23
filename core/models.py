@@ -29,6 +29,9 @@ class User(db.Model):
 	created_on = db.Column(db.DateTime, server_default=db.func.now())
 	updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
 
+	def set_uid(self, email):
+		self.uid = generate_password_hash(email)
+
 	def set_password(self, password):
 		self.password = generate_password_hash(password)
 
