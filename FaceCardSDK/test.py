@@ -160,7 +160,7 @@ def obtain_enrol_embedding_from_filepath(path):
     frame = cv.imread(path)
     return obtain_enrol_embedding(frame)
 
-# match
+# Matching users embedding
 def match_user(image, savedImage):
     try:
         embedding = obtain_enrol_embedding(image)
