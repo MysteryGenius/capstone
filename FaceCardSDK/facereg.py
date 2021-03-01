@@ -24,11 +24,9 @@ for filename in os.listdir(img_directory):
 def enrollUser(name, raw_image):
     # Update Embedding List
 
-    print(raw_image)
     image = face_recognition.load_image_file(raw_image)
 
     single_face_encoding = face_recognition.face_encodings(image)[0]
-    print(single_face_encoding)
     # Saving Embedding to Text file
     np.savetxt(name + '.txt', single_face_encoding)
     # Add Single Encoding to Known List
@@ -51,7 +49,7 @@ def verify(name, raw_image):
     # Match the Embedding
     for i in known_face_encodings: 
         matched_names = matchEmbedding(face_names, known_face_encodings, face_encoding)
-        if (len(matched_names) > 0 and matched_names.includes(name)):
+        if (len(matched_names) > 0 and name in matched_names):
             return True
         else:
             return False
