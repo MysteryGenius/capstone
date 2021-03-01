@@ -45,7 +45,7 @@ def verify(name, raw_image):
         # Retrieve Encoding for Frame
         face_encoding = face_recognition.face_encodings(image)
         if len(face_encoding) == 0:
-            return "NoFaceFound"
+            return False
         else: 
             face_encoding = face_encoding[0]
 
