@@ -6,7 +6,7 @@ import os, time
 # Load images learn how to recognize them.
 known_face_encodings = []
 known_face_names = []
-img_directory = "./FaceCardSDK/face_db"
+img_directory = "./FaceCardSDK/face_db/"
 
 # Refresh Known List on start
 for filename in os.listdir(img_directory):
@@ -14,7 +14,7 @@ for filename in os.listdir(img_directory):
     name = os.path.splitext(filename)[0].lower()
 
     # Load Embedding from Text file
-    single_embed = np.loadtxt(filename, dtype=float)
+    single_embed = np.loadtxt(img_directory+filename, dtype=float)
 
     # Insert in array of known face encodings and their names
     known_face_encodings.append(single_embed)
@@ -29,7 +29,7 @@ def enrollUser(name, raw_image):
 
     single_face_encoding = face_recognition.face_encodings(image)[0]
     # Saving Embedding to Text file
-    np.savetxt(img_directory + '/' + name + '.txt', single_face_encoding)
+    np.savetxt(img_directory + name.lower() + '.txt', single_face_encoding)
     # Add Single Encoding to Known List
     known_face_encodings.append(single_face_encoding)
     known_face_names.append(name)
@@ -39,23 +39,32 @@ def verify(name, raw_image):
     face_names = []
     face_encoding = []
 
-    while len(face_encoding) == 0:
+    if len(face_encoding) == 0:
         # Take Current Frame
         image = face_recognition.load_image_file(raw_image)
         # Retrieve Encoding for Frame
         face_encoding = face_recognition.face_encodings(image)
-        if len(face_encoding) != 0:
-            print(face_encoding)
+        if len(face_encoding) == 0:
+            return "NoFaceFound"
+        else: 
             face_encoding = face_encoding[0]
-            break
+
+    # Load Embedding from Text file
+    single_embed = np.loadtxt(img_directory+name.lower()+'.txt', dtype=float)
+
+    # Insert in array of known face encodings and their names
+    known_face_encodings.append(single_embed)
     # Match the Embedding
+    
+    matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
+
     for i in known_face_encodings: 
         matched_names = matchEmbedding(face_names, known_face_encodings, face_encoding)
-        print(matched_names)
-        if (len(matched_names) > 0 and name in matched_names):
-            return True
-        else:
-            return False
+    if name.lower() in matched_names:
+        return True
+    else:
+        return False
+
 
 def matchEmbedding(face_names, known_face_encodings, face_encoding):  
     name = "Unknown"
