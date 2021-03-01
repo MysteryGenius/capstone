@@ -49,7 +49,7 @@ def verify(name):
     # Match the Embedding
     for i in known_face_encodings: 
         matched_names = matchEmbedding(face_names, known_face_encodings, face_encoding)
-        if (len(matched_names) > 0 and matched_names.includes(name))
+        if (len(matched_names) > 0 and matched_names.includes(name)):
             return True
         else:
             return False
