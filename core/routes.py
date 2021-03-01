@@ -153,11 +153,7 @@ def check_face_vector():
         fileAbsDir = os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename)
         file.save(fileAbsDir)
         return faceCard.verify(user.first_name, fileAbsDir)
-        try: 
-            return faceCard.verify(user.first_name, fileAbsDir)
-        except:
-            result = facialFeature_schema.dump(faceFeature)
-            return jsonify(message="Image Errors", vec=result), 400
+    return 'You fked up'
 
 
 
