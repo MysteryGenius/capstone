@@ -125,7 +125,7 @@ def upload_file():
                 return jsonify(message="Image Errors"), 400
             
             if frame:
-                commit_new_feature = FacialFeature(user_id=user.id, face_vector=frame)
+                commit_new_feature = FacialFeature(user_id=user.id)
                 db.session.add(commit_new_feature)            
                 db.session.commit()
                 return jsonify(message="Success"), 200
