@@ -120,7 +120,7 @@ def upload_file():
             user = User.query.filter_by(id=id).first()
             user.photo = filename
             try: 
-                frame = faceCard.enrollUser(user.name, fileAbsDir)
+                frame = faceCard.enrollUser(user.first_name, fileAbsDir)
             except:
                 return jsonify(message="Image Errors"), 400
             
@@ -152,9 +152,9 @@ def check_face_vector():
         basedir = os.path.abspath(os.path.dirname(__file__))
         fileAbsDir = os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename)
         file.save(fileAbsDir)
-        return faceCard.verify(user.name, fileAbsDir)
+        return faceCard.verify(user.first_name, fileAbsDir)
         try: 
-            return faceCard.verify(user.name, fileAbsDir)
+            return faceCard.verify(user.first_name, fileAbsDir)
         except:
             result = facialFeature_schema.dump(faceFeature)
             return jsonify(message="Image Errors", vec=result), 400
