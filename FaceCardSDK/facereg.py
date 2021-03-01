@@ -23,8 +23,12 @@ for filename in os.listdir(img_directory):
 # Enroll User: Pass in username, image will be read from facedb (Remove temp Image after this method)
 def enrollUser(name, raw_image):
     # Update Embedding List
+
+    print(raw_image)
     image = face_recognition.load_image_file(raw_image)
+
     single_face_encoding = face_recognition.face_encodings(image)[0]
+    print(single_face_encoding)
     # Saving Embedding to Text file
     np.savetxt(name + '.txt', single_face_encoding)
     # Add Single Encoding to Known List
