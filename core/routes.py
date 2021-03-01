@@ -141,19 +141,19 @@ def check_face_vector():
     else:
         id = request.form['id']
     if 'image' not in request.files:
-        return 'No file part'
+        return jsonify(message='No selected file'), 401
     file = request.files['image']
     faceFeature = FacialFeature.query.filter_by(user_id=id).first()
     user = User.query.filter_by(id=id).first()
     if file.filename == '':
-        return 'No selected file'
+        return jsonify(message='No selected file'), 401
     if file and allowed_file(file.filename) or file_ext != validate_image(uploaded_file.stream):
         filename = secure_filename(file.filename)
         basedir = os.path.abspath(os.path.dirname(__file__))
         fileAbsDir = os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename)
         file.save(fileAbsDir)
         return faceCard.verify(user.first_name, fileAbsDir)
-    return 'You fked up'
+    return jsonify(message="You fked up"), 403
 
 
 
