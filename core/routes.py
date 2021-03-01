@@ -12,7 +12,7 @@ from sqlalchemy import desc
 
 import datetime
 
-import FaceCardSDK.test as faceCard
+import FaceCardSDK.facereg as faceCard
 
 # account_sid = 'AC13cbd0428b9f0dd27bda86f23863f9b1'
 # auth_token = '5dbca916f466a9942815b6a9d9c3233a'
@@ -117,17 +117,20 @@ def upload_file():
             basedir = os.path.abspath(os.path.dirname(__file__))
             fileAbsDir = os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename)
             file.save(fileAbsDir)
-            try: 
-                frame = faceCard.obtain_enrol_embedding_from_filepath(fileAbsDir)
-            except:
-                return jsonify(message="Image Errors"), 400
             user = User.query.filter_by(id=id).first()
             user.photo = filename
-
-            commit_new_feature = FacialFeature(user_id=user.id, face_vector=frame)
-            db.session.add(commit_new_feature)            
-            db.session.commit()
-            return jsonify(message="Success"), 200
+            try: 
+                frame = faceCard.enrollUser(user.name, fileAbsDir)
+            except:
+                return jsonify(message="Image Errors"), 400
+            
+            if frame:
+                commit_new_feature = FacialFeature(user_id=user.id, face_vector=frame)
+                db.session.add(commit_new_feature)            
+                db.session.commit()
+                return jsonify(message="Success"), 200
+            else: 
+                return jsonify(message="Frame errors"), 403
         return "Invalid image", 400
 
 @app.route('/users/check',  methods=['POST'])
@@ -141,6 +144,7 @@ def check_face_vector():
         return 'No file part'
     file = request.files['image']
     faceFeature = FacialFeature.query.filter_by(user_id=id).first()
+    user = User.query.filter_by(id=id).first()
     if file.filename == '':
         return 'No selected file'
     if file and allowed_file(file.filename) or file_ext != validate_image(uploaded_file.stream):
@@ -148,9 +152,9 @@ def check_face_vector():
         basedir = os.path.abspath(os.path.dirname(__file__))
         fileAbsDir = os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename)
         file.save(fileAbsDir)
-        return faceCard.match_user(fileAbsDir, faceFeature.face_vector)
+        return faceCard.verify(user.name, fileAbsDir)
         try: 
-            return faceCard.match_user(fileAbsDir, faceFeature.face_vector)
+            return faceCard.verify(user.name, fileAbsDir)
         except:
             result = facialFeature_schema.dump(faceFeature)
             return jsonify(message="Image Errors", vec=result), 400
@@ -431,12 +435,6 @@ def userAdminSessions():
     result = usageHistories_schema.dump(sessions)
     return jsonify(result)
 
-@app.route('/session')
-@cross_origin()
-def sessions():
-    sessions = Session.query.all()
-    result = sessions_schema.dump(sessions)
-    return jsonify(result)
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -454,7 +452,7 @@ def login():
     if test is None or not test.check_password(password):
         return jsonify(message="Bad email or password"), 401
     if test.role == 'user':
-        return jsonify(message="Unauthorized SUCK MY DICK"), 469
+        return jsonify(message="    "), 418
     else:
         expires = datetime.timedelta(days=1)
         access_token = create_access_token(identity=email, expires_delta=expires)

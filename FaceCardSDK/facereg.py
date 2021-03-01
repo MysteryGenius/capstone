@@ -21,10 +21,10 @@ for filename in os.listdir(img_directory):
     known_face_names.append(name)
 
 # Enroll User: Pass in username, image will be read from facedb (Remove temp Image after this method)
-def enrollUser(name):
+def enrollUser(name, image):
     # Update Embedding List
     directory = "./FaceCardSDK/face_db"
-    os.rename(directory + 'image.jpg', directory + name + '.jpg')
+    os.rename(directory + image, directory + name + '.jpg')
     image = face_recognition.load_image_file(directory + name + '.jpg')
     single_face_encoding = face_recognition.face_encodings(image)[0]
     # Saving Embedding to Text file
@@ -34,13 +34,13 @@ def enrollUser(name):
     known_face_names.append(name)
     return known_face_encodings, known_face_names
 
-def verify(name):
+def verify(name, image):
     face_names = []
     face_encoding = []
 
     while len(face_encoding) == 0:
         # Take Current Frame
-        image = face_recognition.load_image_file(directory + 'image.jpg')
+        image = face_recognition.load_image_file(directory + image)
         # Retrieve Encoding for Frame
         face_encoding = face_recognition.face_encodings(image)
         if len(face_encoding) != 0:
