@@ -24,8 +24,8 @@ for filename in os.listdir(img_directory):
 def enrollUser(name, image):
     # Update Embedding List
     directory = "./FaceCardSDK/face_db"
-    os.rename(directory + image, directory + name + '.jpg')
-    image = face_recognition.load_image_file(directory + name + '.jpg')
+    os.rename(image, name + '.jpg')
+    image = face_recognition.load_image_file(name + '.jpg')
     single_face_encoding = face_recognition.face_encodings(image)[0]
     # Saving Embedding to Text file
     np.savetxt(name + '.txt', single_face_encoding)
