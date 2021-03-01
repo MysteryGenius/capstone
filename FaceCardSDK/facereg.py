@@ -6,7 +6,7 @@ import os, time
 # Load images learn how to recognize them.
 known_face_encodings = []
 known_face_names = []
-img_directory = "/face_db"
+img_directory = "./FaceCardSDK/face_db"
 
 # Refresh Known List on start
 for filename in os.listdir(img_directory):
