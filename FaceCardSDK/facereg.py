@@ -44,11 +44,13 @@ def verify(name, raw_image):
         # Retrieve Encoding for Frame
         face_encoding = face_recognition.face_encodings(image)
         if len(face_encoding) != 0:
+            print(face_encoding)
             face_encoding = face_encoding[0]
             break
     # Match the Embedding
     for i in known_face_encodings: 
         matched_names = matchEmbedding(face_names, known_face_encodings, face_encoding)
+        print(matched_names)
         if (len(matched_names) > 0 and name in matched_names):
             return True
         else:
