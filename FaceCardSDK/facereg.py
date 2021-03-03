@@ -8,54 +8,56 @@ known_face_encodings = []
 known_face_names = []
 img_directory = "./FaceCardSDK/face_db/"
 
-# Refresh Known List on start
-for filename in os.listdir(img_directory):
-    # Get names of User Embedding
-    name = os.path.splitext(filename)[0].lower()
+# # Refresh Known List on start
+# for filename in os.listdir(img_directory):
+#     # Get names of User Embedding
+#     name = os.path.splitext(filename)[0].lower()
 
-    # Load Embedding from Text file
-    single_embed = np.loadtxt(img_directory+filename, dtype=float)
+#     # Load Embedding from Text file
+#     single_embed = np.loadtxt(img_directory+filename, dtype=float)
 
-    # Insert in array of known face encodings and their names
-    known_face_encodings.append(single_embed)
-    known_face_names.append(name)
+#     # Insert in array of known face encodings and their names
+#     known_face_encodings.append(single_embed)
+#     known_face_names.append(name)
 
-# Enroll User: Pass in username, image will be read from facedb (Remove temp Image after this method)
+# Enroll User: Pass in username, image will be read from facedb
 def enrollUser(name, raw_image):
     # Update Embedding List
-    known_face_encodings = []
-    known_face_names = []
     image = face_recognition.load_image_file(raw_image)
-
+    print("image taken, detecting faces")
     single_face_encoding = face_recognition.face_encodings(image)[0]
-    # Saving Embedding to Text file
-    np.savetxt(img_directory + name.lower() + '.txt', single_face_encoding)
-    # Add Single Encoding to Known List
-    known_face_encodings.append(single_face_encoding)
-    known_face_names.append(name)
-    return known_face_encodings, known_face_names
+    if len(single_face_encoding) == 0:
+        print("No Face Found")
+        return
+    else:
+        # Saving Embedding to Text file
+        np.savetxt(img_directory + name.lower() + '.txt', single_face_encoding)
+        print("Saving Embedding")
+        return
 
 def verify(name, raw_image):
+    known_face_encodings = []
+    known_face_names = []
     face_names = []
     face_encoding = []
 
+    # Take Current Frame For Verification
+    image = face_recognition.load_image_file(raw_image)
+    # Retrieve Encoding for Frame
+    face_encoding = face_recognition.face_encodings(image)
     if len(face_encoding) == 0:
-        # Take Current Frame
-        image = face_recognition.load_image_file(raw_image)
-        # Retrieve Encoding for Frame
-        face_encoding = face_recognition.face_encodings(image)
-        if len(face_encoding) == 0:
-            return False
-        else: 
-            face_encoding = face_encoding[0]
+        print("Face Not Found")
+        return False
+    else: 
+        face_encoding = face_encoding[0]
 
-    # Load Embedding from Text file
+    # Load True Embedding from Text file
     single_embed = np.loadtxt(img_directory+name.lower()+'.txt', dtype=float)
 
     # Insert in array of known face encodings and their names
     known_face_encodings.append(single_embed)
+
     # Match the Embedding
-    
     matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
 
     for i in known_face_encodings: 
