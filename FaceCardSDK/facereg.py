@@ -35,8 +35,8 @@ def enrollUser(name, raw_image):
         print("Saving Embedding")
         print("name: ", name)
         print(os.getcwd())
-        os.chdir('..')
-        print(os.getcwd())
+        # os.chdir('..')
+        # print(os.getcwd())
         np.savetxt(img_directory + name.lower() + '.txt', single_face_encoding)
         print("Embedding Saved")
         return image
@@ -58,6 +58,7 @@ def verify(name, raw_image):
         face_encoding = face_encoding[0]
 
     # Load True Embedding from Text file
+    print("Verify Directory: ",os.getcwd())
     single_embed = np.loadtxt(img_directory+name.lower()+'.txt', dtype=float)
 
     # Insert in array of known face encodings and their names
