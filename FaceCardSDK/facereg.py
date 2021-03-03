@@ -29,17 +29,17 @@ def enrollUser(name, raw_image):
     print('encoding: ', single_face_encoding)
     if len(single_face_encoding) == 0:
         print("No Face Found")
-        return image
+        return False
     else:
         # Saving Embedding to Text file
         print("Saving Embedding")
         print("name: ", name)
         print(os.getcwd())
-        # os.chdir('..')
-        # print(os.getcwd())
+        os.chdir('..')
+        print(os.getcwd())
         np.savetxt(img_directory + name.lower() + '.txt', single_face_encoding)
         print("Embedding Saved")
-        return image
+        return True
 
 def verify(name, raw_image):
     known_face_encodings = []
