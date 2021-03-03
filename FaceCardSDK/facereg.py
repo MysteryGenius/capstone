@@ -59,7 +59,7 @@ def verify(name, raw_image):
 
     # Load True Embedding from Text file
     print("Verify Directory: ",os.getcwd())
-    single_embed = np.loadtxt(img_directory+name.lower()+'.txt', dtype=float)
+    single_embed = np.loadtxt(os.getcwd() + img_directory + name.lower()+'.txt', dtype=float)
 
     # Insert in array of known face encodings and their names
     known_face_encodings.append(single_embed)
