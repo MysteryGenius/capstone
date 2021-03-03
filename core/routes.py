@@ -119,6 +119,7 @@ def upload_file():
             file.save(fileAbsDir)
             user = User.query.filter_by(id=id).first()
             user.photo = filename
+            print(fileAbsDir)
             try: 
                 frame = faceCard.enrollUser(user.first_name, fileAbsDir)
             except:
