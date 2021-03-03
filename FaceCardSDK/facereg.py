@@ -36,8 +36,8 @@ def enrollUser(name, raw_image):
         print(os.getcwd())
         os.chdir('..')
         print(os.getcwd())
-        np.savetxt(os.getcwd() + img_directory + name.lower() + '.txt', single_face_encoding)
         print("final path: ", os.getcwd() + img_directory)
+        np.savetxt(os.getcwd() + img_directory + name.lower() + '.txt', single_face_encoding)
         print("Embedding Saved")
         return True
 
