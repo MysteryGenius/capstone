@@ -33,7 +33,10 @@ def enrollUser(name, raw_image):
     else:
         # Saving Embedding to Text file
         print("Saving Embedding")
+        print("name: ", name)
+        print(os.getcwd())
         np.savetxt(img_directory + name.lower() + '.txt', single_face_encoding)
+        print("Embedding Saved")
         return image
 
 def verify(name, raw_image):
