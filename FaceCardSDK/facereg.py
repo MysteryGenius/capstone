@@ -25,18 +25,14 @@ def enrollUser(name, raw_image):
     # Update Embedding List
     image = face_recognition.load_image_file(raw_image)
     single_face_encoding = face_recognition.face_encodings(image)[0]
-    print('encoding: ', single_face_encoding)
     if len(single_face_encoding) == 0:
         print("No Face Found")
         return False
     else:
         # Saving Embedding to Text file
-        print("Saving Embedding")
-        print("name: ", name)
-        print(os.getcwd())
         os.chdir('..')
-        print(os.getcwd())
-        print("final path: ", os.getcwd() + img_directory)
+        print("Saving Embedding", name)
+        print("Embedding Save path: ", os.getcwd() + img_directory)
         np.savetxt(os.getcwd() + img_directory + name.lower() + '.txt', single_face_encoding)
         print("Embedding Saved")
         return True
@@ -58,11 +54,12 @@ def verify(name, raw_image):
         face_encoding = face_encoding[0]
 
     # Load True Embedding from Text file
-    print("Verify Directory: ",os.getcwd())
+    print("Verify Directory: ", os.getcwd() + img_directory + name.lower())
     single_embed = np.loadtxt(os.getcwd() + img_directory + name.lower()+'.txt', dtype=float)
-
+    print("single embed: ", single_embed)
     # Insert in array of known face encodings and their names
     known_face_encodings.append(single_embed)
+    print("Known Encodings: ", known_face_encodings)
 
     # Match the Embedding
     matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
