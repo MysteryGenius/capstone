@@ -24,16 +24,17 @@ img_directory = "./FaceCardSDK/face_db/"
 def enrollUser(name, raw_image):
     # Update Embedding List
     image = face_recognition.load_image_file(raw_image)
-    print("image taken, detecting faces")
+    print("image taken: ", image)
     single_face_encoding = face_recognition.face_encodings(image)[0]
+    print('encoding: ', single_face_encoding)
     if len(single_face_encoding) == 0:
         print("No Face Found")
-        return
+        return image
     else:
         # Saving Embedding to Text file
-        np.savetxt(img_directory + name.lower() + '.txt', single_face_encoding)
         print("Saving Embedding")
-        return
+        np.savetxt(img_directory + name.lower() + '.txt', single_face_encoding)
+        return image
 
 def verify(name, raw_image):
     known_face_encodings = []
