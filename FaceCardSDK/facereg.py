@@ -63,14 +63,11 @@ def verify(name, raw_image):
 
     # Match the Embedding
     matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
-
-    for i in known_face_encodings: 
-        matched_names = matchEmbedding(face_names, known_face_encodings, face_encoding)
-    if name.lower() in matched_names:
+    print('matches: ',matches)
+    if matches[0] == True:
         return True
     else:
         return False
-
 
 def matchEmbedding(face_names, known_face_encodings, face_encoding):  
     name = "Unknown"
