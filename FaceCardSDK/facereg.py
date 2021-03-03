@@ -6,7 +6,7 @@ import os, time
 # Load images learn how to recognize them.
 known_face_encodings = []
 known_face_names = []
-img_directory = "./FaceCardSDK/face_db/"
+img_directory = "/FaceCardSDK/face_db/"
 
 # # Refresh Known List on start
 # for filename in os.listdir(img_directory):
@@ -24,7 +24,6 @@ img_directory = "./FaceCardSDK/face_db/"
 def enrollUser(name, raw_image):
     # Update Embedding List
     image = face_recognition.load_image_file(raw_image)
-    print("image taken: ", image)
     single_face_encoding = face_recognition.face_encodings(image)[0]
     print('encoding: ', single_face_encoding)
     if len(single_face_encoding) == 0:
@@ -37,7 +36,8 @@ def enrollUser(name, raw_image):
         print(os.getcwd())
         os.chdir('..')
         print(os.getcwd())
-        np.savetxt(img_directory + name.lower() + '.txt', single_face_encoding)
+        np.savetxt(os.getcwd() + img_directory + name.lower() + '.txt', single_face_encoding)
+        print("final path: ", os.getcwd() + img_directory)
         print("Embedding Saved")
         return True
 
